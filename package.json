@@ -4,7 +4,12 @@
     "description": "Unopinionated Markdown-based documentation framework with software specific syntax extensions.",
     "author": "",
     "homepage": "https://github.com/rapidjs.org/docs#readme",
-    "keywords": [],
+    "keywords": [
+        "documenting",
+        "documentation",
+        "markdown",
+        "framework"
+    ],
     "repository": {
         "type": "git",
         "url": "git+https://github.com/rapidjs.org/docs.git"
@@ -15,10 +20,11 @@
     "main": "./lib/api.js",
     "types": "./types.d.ts",
     "files": [
-        "./lib/",
-        "./types.d.ts"
+        "./build/",
+        "./types/"
     ],
     "scripts": {
+        "prepare": "npx husky",
         "debug": "npx tsc --project ./tsconfig.debug.json",
         "debug:watch": "npm run debug -- --watch",
         "build": "rm -rf ./build/ && rm -rf ./types/ && npx tsc --project ./tsconfig.build.json",
@@ -34,6 +40,7 @@
         "@rapidjs.org/testing": "^0.1.0",
         "@rapidjs.org/testing-unit": "^0.1.0",
         "@types/markdown-it": "^14.1.2",
+        "@types/node": "^22.5.0",
         "@typescript-eslint/eslint-plugin": "^7.8.0",
         "@typescript-eslint/parser": "^7.8.0",
         "eslint": "^8.57.0",

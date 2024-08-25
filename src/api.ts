@@ -1,6 +1,2 @@
-import { Renderer } from "./Renderer";
-
-
-export function render() {
-    new Renderer({});
-};
+export { PullAgent } from "./agent/PullAgent";
+export { PushAgent } from "./agent/PushAgent";
