@@ -1,35 +1,49 @@
 {
-    "name": "@rapidjs.org/docs",
+    "name": "@rapidjs.org/documenting",
     "version": "0.1.0",
-    "description": "",
+    "description": "Unopinionated Markdown-based documentation framework with software specific syntax extensions.",
     "author": "",
-	"homepage": "https://github.com/rapidjs.org/docs#readme",
+    "homepage": "https://github.com/rapidjs.org/docs#readme",
     "keywords": [],
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/rapidjs.org/docs.git"
-	},
-	"bugs": {
-		"url": "https://github.com/rapidjs.org/docs/issues"
-	},
-	"main": "./lib/api.js",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/rapidjs.org/docs.git"
+    },
+    "bugs": {
+        "url": "https://github.com/rapidjs.org/docs/issues"
+    },
+    "main": "./lib/api.js",
     "types": "./types.d.ts",
     "files": [
+        "./lib/",
         "./types.d.ts"
     ],
     "scripts": {
-		"prepare": "npx husky install",
-        "lint": "npx eslint ./lib/*.js",
-		"lint:fix": "npx eslint --fix ./lib/*.js",
-		"format": "npx prettier --check ./lib/*.js",
-		"format:fix": "npx prettier --write ./lib/**/*.js",
-		"test": "echo 'Missing test script' && exit 1"
+        "debug": "npx tsc --project ./tsconfig.debug.json",
+        "debug:watch": "npm run debug -- --watch",
+        "build": "rm -rf ./build/ && rm -rf ./types/ && npx tsc --project ./tsconfig.build.json",
+        "lint": "npx eslint ./src/**/*.js",
+        "lint:fix": "npx eslint --fix ./src/**/*.ts",
+        "format": "npx prettier --check ./src/**/*.ts",
+        "format:fix": "npx prettier --write ./src/**/*.ts",
+        "test": "npx rjs-test unit ./test",
+        "test-env": "node ./test-env/run.js"
     },
     "devDependencies": {
-		"@eslint/js": "^9.2.0",
-		"eslint": "^8.57.0",
-		"husky": "^9.0.11",
-		"lint-staged": "^15.2.2",
-		"prettier": "^3.2.5"
+        "@eslint/js": "^9.2.0",
+        "@rapidjs.org/testing": "^0.1.0",
+        "@rapidjs.org/testing-unit": "^0.1.0",
+        "@types/markdown-it": "^14.1.2",
+        "@typescript-eslint/eslint-plugin": "^7.8.0",
+        "@typescript-eslint/parser": "^7.8.0",
+        "eslint": "^8.57.0",
+        "eslint-plugin-typescript": "^0.14.0",
+        "husky": "^9.0.11",
+        "lint-staged": "^15.2.2",
+        "prettier": "^3.2.5",
+        "typescript-eslint": "^7.8.0"
+    },
+    "dependencies": {
+        "markdown-it": "^14.1.0"
     }
 }
