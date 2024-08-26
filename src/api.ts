@@ -1,2 +1,3 @@
-export { PullAgent } from "./agent/PullAgent";
-export { PushAgent } from "./agent/PushAgent";
+export { FSPullAgent } from "./agent/FSPullAgent";
+export { GHPullAgent } from "./agent/GHPullAgent";
+export { GHPushAgent } from "./agent/GHPushAgent";

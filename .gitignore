@@ -1,6 +1,8 @@
 node_modules/
 build/
 types/
+test/test-target/
 
 .DS_Store
+tsconfig.debug.tsbuildinfo
 package-lock.json

@@ -1,31 +1,40 @@
-import { writeFile } from "fs";
-import { join } from "path";
+import { mkdirSync, writeFile, writeFileSync } from "fs";
+import { resolve, join } from "path";
 
 import markdownit from "markdown-it";
 
-import { IMarkdownTree } from "./interfaces";
+import { AStructure } from "./structure/AStructure";
+import { DirectoryStructure } from "./structure/DirectoryStructure";
+import { FileStructure } from "./structure/FileStructure";
 
 
 export class Renderer {
     private readonly md: markdownit;
+    private readonly targetDirPath: string;
 
-    constructor() {
+    constructor(targetDirPath: string) {
         this.md = markdownit("commonmark");
+        this.targetDirPath = resolve(targetDirPath);
     }
-    
-    render(markdownTree: IMarkdownTree, targetDirPath: string) {
-        const targetPath: string = join(targetDirPath, markdownTree.filename);
-        const markup: string = this.md.render(markdownTree.markdown);
 
-        writeFile(targetPath.replace(/(\.md)?$/, ".html"), markup, (err: Error) => {
-            if(!err) return;
-
-            console.error(err);
+    render(directory: DirectoryStructure, nesting: string[] = []) {
+        mkdirSync(join(this.targetDirPath, ...nesting), {
+            recursive: true
         });
-
-        (markdownTree.children ?? [])
-        .forEach((childMarkdownTree: IMarkdownTree) => {
-            this.render(childMarkdownTree, targetPath);
+        
+        directory.children
+        .forEach((structure: AStructure) => {
+            if(structure instanceof DirectoryStructure) {
+                this.render(structure, nesting.concat(structure.title ? [ structure.title ] : []));
+                
+                return;
+            }
+            // TODO: Order?
+            // TODO: Indexes?
+            writeFileSync(
+                join(this.targetDirPath, ...nesting, `${structure.title}.html`),
+                this.md.render((structure as FileStructure).markdown)
+            );
         });
     }
 };
