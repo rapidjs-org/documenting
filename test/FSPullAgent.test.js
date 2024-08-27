@@ -10,7 +10,7 @@ const cleanTargetPath = () => rmSync(TARGET_PATH, {
     force: true,
     recursive: true
 });
-//process.on("exit", cleanTargetPath);
+process.on("exit", cleanTargetPath);
 cleanTargetPath();
 
 
@@ -35,6 +35,53 @@ new UnitTest("Check if target directory does exist (after)")
             .split(/\n/)[0];
         })
         .expected("<h1>A</h1>");
+
+        new UnitTest("Check table of contents file contents (toc.json)")
+        .actual(JSON.parse(readFileSync(join(TARGET_PATH, "./toc.json")).toString()))
+        .expected([
+            {
+              title: "a",
+              sections: [
+                {
+                    title: "index"
+                },
+                {
+                    title: "b"
+                },
+                {
+                    title: "a"
+                },
+                {
+                    title: "z"
+                }
+              ]
+            },
+            {
+              title: "b",
+              sections: [
+                {
+                  title: "a",
+                  sections: [
+                    {
+                        title: "a"
+                    },
+                    {
+                        title: "b"
+                    }
+                  ]
+                },
+                {
+                    title: "b"
+                }
+              ]
+            },
+            {
+                title: "b"
+            },
+            {
+                title: "c"
+            }
+        ]);
     }, 750);
 }))
 .expected(true);

@@ -2,14 +2,17 @@
 import { Dirent, statSync, existsSync, readdirSync, readFileSync, mkdirSync, rmSync } from "fs";
 import { join } from "path";
 
+import { AStructure } from "../structure/AStructure";
 import { DirectoryStructure } from "../structure/DirectoryStructure";
 import { FileStructure } from "../structure/FileStructure";
 import { Renderer } from "../Renderer";
 
 
 const _config = {
+    indexArticleName: "index",
     tempDirPath: "/tmp/rjs__documenting"
 };
+
 
 const TEMPORARY_DIR_PATH = (() => {
     let i = 0;
@@ -47,7 +50,7 @@ export abstract class AAgent {
 
         if(!statSync(path).isDirectory()) return;
 
-        return new DirectoryStructure(title, readdirSync(path, {
+        const structures: AStructure[] = readdirSync(path, {
             withFileTypes: true
         })
         .filter((dirent: Dirent) => {
@@ -57,8 +60,16 @@ export abstract class AAgent {
         .map((dirent: Dirent) => {
             return dirent.isDirectory()
             ? this.readDirTemp(join(relativePath, dirent.name), dirent.name)
-            : new FileStructure(dirent.name.replace(/(\.md)$/i, ""), readFileSync(join(path, dirent.name)).toString());
-        }));
+            : new FileStructure(
+                dirent.name
+                .replace(/^\d\. */i, "")
+                .replace(/\.md$/i, ""),
+                readFileSync(join(path, dirent.name)).toString()
+            );
+        });
+        structures.sort((a: AStructure) => -+(a.title === _config.indexArticleName));
+
+        return new DirectoryStructure(title, structures);
     }
     
     protected render() {

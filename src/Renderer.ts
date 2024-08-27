@@ -8,6 +8,18 @@ import { DirectoryStructure } from "./structure/DirectoryStructure";
 import { FileStructure } from "./structure/FileStructure";
 
 
+const _config = {
+    tocFileName: "toc"
+};
+
+
+interface ITOCEntry {
+    title: string;
+
+    sections?: ITOCEntry[];
+}
+
+
 export class Renderer {
     private readonly md: markdownit;
     private readonly targetDirPath: string;
@@ -17,24 +29,35 @@ export class Renderer {
         this.targetDirPath = resolve(targetDirPath);
     }
 
-    render(directory: DirectoryStructure, nesting: string[] = []) {
+    private renderLevel(directory: DirectoryStructure, nesting: string[] = []): ITOCEntry[] {
         mkdirSync(join(this.targetDirPath, ...nesting), {
             recursive: true
         });
-        
-        directory.children
-        .forEach((structure: AStructure) => {
+
+        return directory.children
+        .map((structure: AStructure) => {
             if(structure instanceof DirectoryStructure) {
-                this.render(structure, nesting.concat(structure.title ? [ structure.title ] : []));
-                
-                return;
+                return {
+                    title: structure.title,
+                    sections: this.renderLevel(structure, nesting.concat(structure.title ? [ structure.title ] : []))
+                };
             }
-            // TODO: Order?
-            // TODO: Indexes?
+            
             writeFileSync(
                 join(this.targetDirPath, ...nesting, `${structure.title}.html`),
                 this.md.render((structure as FileStructure).markdown)
             );
+
+            return {
+                title: structure.title
+            }
         });
+    }
+
+    public render(parentDirectory: DirectoryStructure) {
+        writeFileSync(
+            join(this.targetDirPath, `${_config.tocFileName}.json`),
+            JSON.stringify(this.renderLevel(parentDirectory), null, 2)
+        );
     }
 };
