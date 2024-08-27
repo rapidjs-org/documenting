@@ -26,30 +26,54 @@ const TEMPORARY_DIR_PATH = (() => {
 mkdirSync(TEMPORARY_DIR_PATH, {
     recursive: true
 });
-/* process.on("exit", () => rmSync(TEMPORARY_DIR_PATH, {
+process.on("exit", () => rmSync(TEMPORARY_DIR_PATH, {
     force: true,
     recursive: true
-})); */
+}));
+
+
+// TODO: Checksum to prevent unnecessary rebuilds?
 
 
 export abstract class AAgent {
     public static tempDirPath: string = TEMPORARY_DIR_PATH;
 
-    private readonly renderer: Renderer;
-    
-    constructor(targetDirPath: string) {
-        this.renderer = new Renderer(targetDirPath);
+    private static clearDirectory(path: string) {
+        rmSync(path, {
+            force: true,
+            recursive: true
+        });
+        mkdirSync(path, {
+            recursive: true
+        });
     }
     
-    protected abstract writeTempDir(...args: unknown[]): void|Promise<void>;
+    private readonly renderer: Renderer;
+    
+    protected readonly options: {
+        [ key: string ]: unknown;
+    } & {
+        targetDirPath?: string;
+    };
+    
+    constructor(options: { [ key: string ]: unknown; }, renderer?: Renderer) {
+        this.options = options;
+
+        this.renderer = renderer ?? new Renderer();
+    }
+
+    protected writeTempDir(..._: unknown[]): void|Promise<void> {
+        AAgent.clearDirectory(AAgent.tempDirPath);
+        AAgent.clearDirectory(this.options.targetDirPath);
+    }
 
     public abstract start(): void|Promise<void>;
 
-    protected readDirTemp(relativePath: string = ".", title: string = null): DirectoryStructure {
+    private readDirTemp(relativePath: string = ".", title: string = null): DirectoryStructure {
         const path: string = join(AAgent.tempDirPath, relativePath);
 
         if(!statSync(path).isDirectory()) return;
-
+        
         const structures: AStructure[] = readdirSync(path, {
             withFileTypes: true
         })
@@ -58,12 +82,11 @@ export abstract class AAgent {
                 || (dirent.isFile() && /\.md$/i.test(dirent.name));
         })
         .map((dirent: Dirent) => {
+            const title = dirent.name.replace(/^\d\. */i, "");
             return dirent.isDirectory()
-            ? this.readDirTemp(join(relativePath, dirent.name), dirent.name)
+            ? this.readDirTemp(join(relativePath, dirent.name), title)
             : new FileStructure(
-                dirent.name
-                .replace(/^\d\. */i, "")
-                .replace(/\.md$/i, ""),
+                title.replace(/\.md$/i, ""),
                 readFileSync(join(path, dirent.name)).toString()
             );
         });
@@ -74,7 +97,7 @@ export abstract class AAgent {
     
     protected render() {
         const parentDirectory: DirectoryStructure = this.readDirTemp();
-
-        this.renderer.render(parentDirectory);
+        
+        this.renderer.render(this.options.targetDirPath, parentDirectory);
     }
 }

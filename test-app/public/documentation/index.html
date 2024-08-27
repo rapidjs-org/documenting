@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test Documentation App</title>
+        <script src="/@client"></script>
+        <style>
+            body {
+                display: flex;
+            }
+            main, aside {
+                padding: 2rem 4rem;
+            }
+            main {
+                flex: 1 0 0;
+            }
+            main > *:first-child {
+                margin-top: 0;
+            }
+            a {
+                cursor: pointer;
+            }
+        </style>
+        <script>
+            addEventListener("DOMContentLoaded", () => {
+                const docsClient = new rJS__documenting.Client();
+                docsClient.loadArticle("#content", [ "index" ]);
+                docsClient.loadTOC("#toc", (articleLinkEl, articleNesting) => {
+                    articleLinkEl.addEventListener("click", () => {
+                        docsClient.loadArticle("#content", articleNesting);
+                    });
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <aside>
+            <strong>Table of Contents</strong>
+            <div id="toc">
+                <!-- DYNAMIC -->
+            </div>
+        </aside>
+        <main id="content">
+            <!-- DYNAMIC -->
+        </main>
+    </body>
+</html>

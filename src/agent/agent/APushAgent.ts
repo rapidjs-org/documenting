@@ -1,6 +1,7 @@
 import { normalize } from "path";
 import { IncomingHttpHeaders, IncomingMessage, ServerResponse, createServer } from "http";
 
+import { Renderer } from "../Renderer";
 import { AAgent } from "./AAgent";
 
 
@@ -9,17 +10,17 @@ export abstract class APushAgent<O extends { [ key: string ]: unknown; }> extend
         port: number;
     };
 
-    constructor(targetDirPath: string, options: O) {
-        super(targetDirPath);
-
-        this.options = {
+    constructor(options: O, renderer?: Renderer) {
+        super({
             port: 6001,
             
             ...options
-        };
+        }, renderer);
     }
 
-    protected abstract writeTempDir(payload: string, headers: IncomingHttpHeaders): void|Promise<void>;
+    protected writeTempDir(_: string, __: IncomingHttpHeaders): void|Promise<void> {
+        super.writeTempDir();
+    }
 
     private handleRequest(req: IncomingMessage, res: ServerResponse) {
         if(req.method.toUpperCase() !== "POST") {

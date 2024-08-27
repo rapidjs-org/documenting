@@ -11,6 +11,8 @@ export class FSPullAgent extends APullAgent<{
     secret?: string;
 }> {
     protected writeTempDir() {
+		super.writeTempDir();
+
 		const sourceDirPath: string = resolve(this.options.sourceDirPath ?? ".");
 
 		if(!existsSync(sourceDirPath)) return;

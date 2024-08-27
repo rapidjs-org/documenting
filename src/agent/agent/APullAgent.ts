@@ -1,3 +1,4 @@
+import { Renderer } from "../Renderer";
 import { AAgent } from "./AAgent";
 
 
@@ -6,16 +7,14 @@ export abstract class APullAgent<O extends { [ key: string ]: unknown; }> extend
         interval: number;
     };
 
-    constructor(targetDirPath: string, options: O) {
-        super(targetDirPath);
-
-        this.options = {
+    constructor(options: O, renderer: Renderer) {
+        super({
             interval: 1000 * 60 * 60 * 12,  // 12h
             
             ...options
-        };
+        }, renderer);
     }
-
+    
     private async pull() {
         this.writeTempDir();
         
