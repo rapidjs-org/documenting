@@ -7,70 +7,109 @@ window.rJS__documenting = (() => {
 
     class Client {
         #docsRootUrl;
-        #currentArticleNesting;
+        #tocEl; #contentEl;
+        #data;
 
-        constructor(docsRootUrl = "/docs") {
+        constructor(tocElementReference, contentElementReference, docsRootUrl = "/docs") {
             this.#docsRootUrl = docsRootUrl;
+            this.#tocEl = resolveElementReference(tocElementReference);
+            this.#contentEl = resolveElementReference(contentElementReference);
         }
-
-        loadTOC(parentElementReference, entryCb = (() => {}), ) {
-            return new Promise((resolve, reject) => {
-                fetch(`${this.#docsRootUrl}/toc.json`)
-                .then((res) => res.json())
-                .then((data) => {
-                    const renderLevel = (dataLevel, nesting = []) => {
-                        const olEl = document.createElement("ol");
-                        dataLevel.forEach((section) => {
-                            const subNesting = nesting.concat([ section.title ]);
-                            const liEl = document.createElement("li");
-                            const aEl = document.createElement("a");
         
-                            aEl.textContent = section.title;
-                            liEl.appendChild(aEl);
-                            olEl.appendChild(liEl);
+        loadTOC(entryCb = (() => {}), ) {
+            return new Promise(async (resolve) => {
+                const res = await fetch(encodeURI(`${this.#docsRootUrl}/toc.json`))
+                const data = await res.json();
 
-                            entryCb(aEl, subNesting);
-                            
-                            if(!section.sections) return;
-                            
-                            liEl.appendChild(renderLevel(section.sections, subNesting));
-                        });
-                        return olEl;
-                    };
+                let previousSection;
+                const render = (section = { sections: this.#data }, nesting = []) => {
+                    const olEl = document.createElement("ol");
+                    section.sections
+                    .forEach((subSection, i) => {
+                        const subNesting = nesting.concat([ subSection.title ]);
+                        const liEl = document.createElement("li");
+                        const aEl = document.createElement("a");
 
-                    resolveElementReference(parentElementReference)
-                    .appendChild(renderLevel(data));
+                        subSection.nesting = subNesting;
+                        subSection.parent = section;
+                        subSection.previous = previousSection;
 
-                    resolve(this);
-                })
-                .catch(reject);
+                        (previousSection ?? {}).next = subSection;
+                        previousSection = subSection.sections ? previousSection : subSection;
+                        
+                        aEl.textContent = subSection.caption;
+                        liEl.appendChild(aEl);
+
+                        entryCb(aEl, subNesting);
+
+                        (subSection.title !== "index" || subSection.section)
+                        && olEl.appendChild(liEl);
+                        subSection.sections
+                        && liEl.appendChild(render(subSection, subNesting));
+                    });
+                    return olEl;
+                };
+
+                this.#data = data;
+                this.#tocEl.appendChild(render());
+                
+                resolve(this);
             });
         }
         
-        loadArticle(parentElementReference, nesting) {
-            return new Promise((resolve, reject) => {
-                const leaf = nesting.pop() ?? "index";
-                
-                fetch(`${this.#docsRootUrl}/${nesting.join("/")}/${leaf.replace(/(\.html)?$/i, ".html")}`)
-                .then((res) => res.text())
-                .then((markup) => {
-                    resolveElementReference(parentElementReference)
-                    .innerHTML = markup;
+        loadArticle(nesting) {
+            nesting = (nesting ?? []).length ? nesting : [ "index" ];
+            
+            const remainingNesting = [ ...nesting ];
+            let currentSection = { sections: this.#data };
+            do {
+                const pivotTitle = remainingNesting.shift();
 
-                    this.#currentArticleNesting = nesting;
+                let isValidNesting = false;
+                for(const section of currentSection.sections) {
+                    if(section.title !== pivotTitle) continue;
 
-                    resolve();
-                })
-                .catch((err) => {
-                    this.#currentArticleNesting = null;
+                    currentSection = section;
+                    isValidNesting = true;
                     
-                    reject(err);
-                });
+                    break;
+                }
+
+                if(!isValidNesting) throw new ReferenceError("Invalid nesting");
+
+                if(remainingNesting.length) continue;
+                
+                currentSection.sections
+                && nesting.push(currentSection.sections[0].title);
+            } while(remainingNesting.length);
+            
+            return new Promise(async (resolve, reject) => {
+                const res = await fetch(encodeURI(`${
+                    this.#docsRootUrl
+                }/${
+                    nesting.slice(0, -1).join("/")
+                }/${
+                    [ nesting ]
+                    .flat()
+                    .slice(-1)[0]
+                    .replace(/(\.html)?$/i, ".html")
+                }`));
+
+                if(res.status.toString().charAt(0) !== "2") {
+                    reject(res.status);
+
+                    return;
+                }
+
+                const markup = await res.text();
+
+                this.#contentEl
+                .innerHTML = markup;
+
+                resolve(currentSection);
             });
         }
     }
-
-    return {
-        Client
-    };
+    
+    return { Client };
 })();

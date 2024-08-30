@@ -14,10 +14,11 @@ const _config = {
 };
 
 
-interface ITOCEntry {
+interface ISection {
     title: string;
+    caption: string;
     
-    sections?: ITOCEntry[];
+    sections?: ISection[];
 }
 
 
@@ -31,16 +32,22 @@ export class Renderer {
     public render(targetDirPath: string, rootDirectoryStructure: DirectoryStructure) {
         const absoluteTargetDirPath = resolve(targetDirPath ?? _config.defaultDocsDirPath);
 
-        const renderLevel = (directory: DirectoryStructure, nesting: string[] = []): ITOCEntry[] => {
+        const renderLevel = (directory: DirectoryStructure, nesting: string[] = []): ISection[] => {
             mkdirSync(join(absoluteTargetDirPath, ...nesting), {
                 recursive: true
             });
     
             return directory.children
             .map((structure: AStructure) => {
+                const sectionObj: ISection = {
+                    title: structure.title,
+                    caption: structure.caption
+                };
+
                 if(structure instanceof DirectoryStructure) {
                     return {
-                        title: structure.title,
+                        ...sectionObj,
+
                         sections: renderLevel(structure, nesting.concat(structure.title ? [ structure.title ] : []))
                     };
                 }
@@ -50,9 +57,7 @@ export class Renderer {
                     this.md.render((structure as FileStructure).markdown)
                 );
     
-                return {
-                    title: structure.title
-                }
+                return sectionObj;
             });
         };
 

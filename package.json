@@ -56,6 +56,7 @@
         "uglify-js": "^3.19.2"
     },
     "dependencies": {
-        "markdown-it": "^14.1.0"
+        "markdown-it": "^14.1.0",
+        "tar": "^7.4.3"
     }
 }

@@ -3,7 +3,7 @@ node_modules/
 build/
 types/
 
-test/test-target/
+test/test-target-*/
 test-app/public/docs/
 
 .DS_Store

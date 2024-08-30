@@ -14,30 +14,24 @@ const _config = {
 };
 
 
-const TEMPORARY_DIR_PATH = (() => {
-    let i = 0;
-    let tempDirPath: string = _config.tempDirPath;
-    while(existsSync(tempDirPath)) {
-        tempDirPath += "_";
-        if(i++ > 100) process.exit(2);
-    }
-    return tempDirPath;
-})();
-mkdirSync(TEMPORARY_DIR_PATH, {
+mkdirSync(_config.tempDirPath, {
     recursive: true
 });
-process.on("exit", () => rmSync(TEMPORARY_DIR_PATH, {
+process.on("exit", () => rmSync(_config.tempDirPath, {
     force: true,
     recursive: true
 }));
 
 
-// TODO: Checksum to prevent unnecessary rebuilds?
+// TODO: Checksum (or etag) to prevent unnecessary rebuilds?
 
+export interface IAgentOptions {
+    targetDirPath: string;
+}
 
-export abstract class AAgent {
-    public static tempDirPath: string = TEMPORARY_DIR_PATH;
-
+export abstract class AAgent<O extends IAgentOptions> {
+    public static tempDirPath: string = _config.tempDirPath;
+    
     private static clearDirectory(path: string) {
         rmSync(path, {
             force: true,
@@ -50,25 +44,18 @@ export abstract class AAgent {
     
     private readonly renderer: Renderer;
     
-    protected readonly options: {
-        [ key: string ]: unknown;
-    } & {
-        targetDirPath?: string;
-    };
+    protected readonly options: O;
     
-    constructor(options: { [ key: string ]: unknown; }, renderer?: Renderer) {
+    constructor(options: O, renderer?: Renderer) {
         this.options = options;
+
+        if(!this.options.targetDirPath) throw new SyntaxError("Missing target path option");
 
         this.renderer = renderer ?? new Renderer();
     }
 
-    protected writeTempDir(..._: unknown[]): void|Promise<void> {
-        AAgent.clearDirectory(AAgent.tempDirPath);
-        AAgent.clearDirectory(this.options.targetDirPath);
-    }
-
     public abstract start(): void|Promise<void>;
-
+    
     private readDirTemp(relativePath: string = ".", title: string = null): DirectoryStructure {
         const path: string = join(AAgent.tempDirPath, relativePath);
 
@@ -94,10 +81,21 @@ export abstract class AAgent {
 
         return new DirectoryStructure(title, structures);
     }
-    
+
+    protected writeTempDir(..._: unknown[]): void|Promise<void> {
+        AAgent.clearDirectory(AAgent.tempDirPath);
+        AAgent.clearDirectory(this.options.targetDirPath);
+    }
+
     protected render() {
         const parentDirectory: DirectoryStructure = this.readDirTemp();
         
         this.renderer.render(this.options.targetDirPath, parentDirectory);
+    }
+    
+    public async trigger(...args: unknown[]) {
+        this.writeTempDir(...args);
+        
+        this.render();
     }
 }

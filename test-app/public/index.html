@@ -1,3 +1,92 @@
-<h1>Test Documentation App</h1>
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test Documentation App</title>
+        <script src="/@client"></script>
+        <style>
+            *:first-child {
+                margin-top: 0;
+            }
+            body, div {
+                display: flex;
+                gap: 3rem
+            }
+            main, aside {
+                padding: 3rem;
+            }
+            main {
+                flex: 1 0 0;
+            }
+            a {
+                cursor: pointer;
+                color: firebrick;
+                text-decoration: underline;
+            }
+            .hide {
+                visibility: hidden;
+            }
+        </style>
+        <script>
+            addEventListener("DOMContentLoaded", () => {
+                const docsClient = new rJS__documenting.Client("#toc", document.querySelector("#content"));
+                
+                let currentSection;
+                window.loadPreviousArticle = function() {
+                    if(!currentSection.previous) return;
+                    loadArticle(currentSection.previous.nesting);
+                }
+                window.loadNextArticle = function() {
+                    if(!currentSection.next) return;
+                    loadArticle(currentSection.next.nesting);
+                }
 
-<a href="/documentation/">Go to Documentation Page</a>
+                async function loadArticle(articleNesting) {
+                    currentSection = await docsClient.loadArticle(articleNesting);
+
+                    const updatePagination = identifier => {
+                        const el = document.querySelector(`#pagination-${identifier}`);
+                        if(!currentSection[identifier]) {
+                            el.classList.add("hide");
+                            return;
+                        };
+                        el.classList.remove("hide");
+                        el.querySelector("a").textContent = currentSection[identifier].caption;
+                    };
+                    updatePagination("previous");
+                    updatePagination("next");
+                }
+                
+                docsClient.loadTOC((articleLinkEl, articleNesting) => {
+                    articleLinkEl.addEventListener("click", () => loadArticle(articleNesting));
+                })
+                .then(async () => {
+                    console.log("Try loading invalid nesting:");
+                    await loadArticle();
+
+                    loadArticle([ "not", "existing" ])
+                    .catch(err => console.error(err));
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <aside id="toc">
+            <!-- DYNAMIC -->
+        </aside>
+        <main>
+            <section id="content">
+                <!-- DYNAMIC -->
+            </section>
+            <br>
+            <br>
+            <div id="pagination">
+                <span id="pagination-previous">
+                    Previous: <a onclick="loadPreviousArticle()"></a>
+                </span>
+                <span id="pagination-next">
+                    Next: <a onclick="loadNextArticle()"></a>
+                </span>
+            </div>
+        </main>
+    </body>
+</html>

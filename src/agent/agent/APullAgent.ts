@@ -1,12 +1,14 @@
 import { Renderer } from "../Renderer";
-import { AAgent } from "./AAgent";
+import { IAgentOptions, AAgent } from "./AAgent";
 
 
-export abstract class APullAgent<O extends { [ key: string ]: unknown; }> extends AAgent {
-    protected readonly options: O & {
-        interval: number;
-    };
+export interface IPullAgentOptions extends IAgentOptions {
+    interval: number;
+};
 
+export abstract class APullAgent<O extends IPullAgentOptions> extends AAgent<IPullAgentOptions> {
+    protected readonly options: O;
+    
     constructor(options: O, renderer: Renderer) {
         super({
             interval: 1000 * 60 * 60 * 12,  // 12h
@@ -15,15 +17,10 @@ export abstract class APullAgent<O extends { [ key: string ]: unknown; }> extend
         }, renderer);
     }
     
-    private async pull() {
-        this.writeTempDir();
-        
-        this.render();
-    }
-
     public start() {
-        setInterval(() => this.pull(), this.options.interval);
+        this.options.interval
+        && setInterval(() => this.trigger(), this.options.interval);
 
-        this.pull();
+        this.trigger();
     }
 }

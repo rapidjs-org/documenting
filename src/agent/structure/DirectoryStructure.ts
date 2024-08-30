@@ -2,19 +2,15 @@ import { AStructure } from "./AStructure";
 
 
 export class DirectoryStructure extends AStructure {
-    private readonly childStructures: AStructure[];
+    public readonly children: AStructure[] = [];
 
-    constructor(title: string, children: AStructure[] = []) {
-        super(title);
-
-        this.childStructures = children;
+    constructor(title: string, children: AStructure|AStructure[] = [], captionCb?: ((rawCaption: string) => string)) {
+        super(title, null, captionCb);
+        
+        this.append(children);
     }
 
-    public appendChild(childStructure: AStructure) {
-        this.childStructures.push(childStructure);
-    }
-
-    public get children(): AStructure[] {
-        return this.childStructures;
+    public append(children: AStructure|AStructure[]) {
+        this.children.push(...[ children ].flat());
     }
 }

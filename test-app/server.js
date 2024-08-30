@@ -21,7 +21,7 @@ http
 
         return;
     }
-
+    
     const filepath = path.join(__dirname, "./public", req.url.replace(/\/$/, "/index.html"));
     
     if(fs.existsSync(filepath) && fs.statSync(filepath).isFile()) {
