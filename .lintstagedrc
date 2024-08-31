@@ -1,5 +1,5 @@
 {
-    "./lib/**/*.js": [
+    "./src/agent/**/*.ts": [
         "npx eslint --fix",
         "npx prettier --write"
     ]
