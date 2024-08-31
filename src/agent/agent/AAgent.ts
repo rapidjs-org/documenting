@@ -4,7 +4,7 @@ import { join } from "path";
 import { AStructure } from "../structure/AStructure";
 import { DirectoryStructure } from "../structure/DirectoryStructure";
 import { FileStructure } from "../structure/FileStructure";
-import { Renderer } from "../Renderer";
+import { Renderer } from "../renderer/Renderer";
 
 const _config = {
 	indexArticleName: "index",

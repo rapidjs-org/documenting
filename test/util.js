@@ -8,6 +8,6 @@ module.exports.declareTargetPath = function(targetPath) {
     });
     
     cleanTargetPath();
-
-    process.on("exit", cleanTargetPath);
+    
+    //process.on("exit", cleanTargetPath);
 };

@@ -1,7 +1,7 @@
 import { IncomingHttpHeaders } from "http";
 import { createHmac, timingSafeEqual } from "crypto";
 
-import { Renderer } from "../Renderer";
+import { Renderer } from "../renderer/Renderer";
 import { IPushAgentOptions, APushAgent } from "./APushAgent";
 import { IGHPullAgentOptions, GHPullAgent } from "./GHPullAgent";
 

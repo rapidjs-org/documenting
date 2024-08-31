@@ -3,9 +3,10 @@ import { resolve, join } from "path";
 
 import markdownit from "markdown-it";
 
-import { AStructure } from "./structure/AStructure";
-import { DirectoryStructure } from "./structure/DirectoryStructure";
-import { FileStructure } from "./structure/FileStructure";
+import { AStructure } from "../structure/AStructure";
+import { DirectoryStructure } from "../structure/DirectoryStructure";
+import { FileStructure } from "../structure/FileStructure";
+import extraRules from "./extra-rules";
 
 const _config = {
 	defaultDocsDirPath: "./docs",
@@ -19,11 +20,27 @@ interface ISection {
 	sections?: ISection[];
 }
 
+/* class ExtraRules {
+	public static syntaxDefinition(md: markdownit) {}
+} */
+
 export class Renderer {
+	private readonly enableExtraRules: boolean;
 	private readonly md: markdownit;
 
-	constructor() {
-		this.md = markdownit("commonmark");
+	constructor(configuration?: markdownit.PresetName, enableExtraRules?: boolean);
+	constructor(configuration?: markdownit.Options, enableExtraRules?: boolean);
+	constructor(
+		configuration: markdownit.PresetName | markdownit.Options = "commonmark",
+		enableExtraRules: boolean = true
+	) {
+		this.md = markdownit(configuration as markdownit.PresetName);
+
+		this.enableExtraRules = enableExtraRules;
+		if (!enableExtraRules) return;
+
+		/* enableExtraRules
+		&& this.md.use(ExtraRules.syntaxDefinition); */
 	}
 
 	public render(targetDirPath: string, rootDirectoryStructure: DirectoryStructure) {
@@ -48,10 +65,14 @@ export class Renderer {
 					};
 				}
 
-				writeFileSync(
-					join(absoluteTargetDirPath, ...nesting, `${structure.title}.html`),
-					this.md.render((structure as FileStructure).markdown)
-				);
+				let markdown: string = (structure as FileStructure).markdown;
+				for (const extraRule of extraRules) {
+					if (!this.enableExtraRules) break;
+					markdown = extraRule(markdown);
+				}
+				const markup: string = this.md.render(markdown);
+
+				writeFileSync(join(absoluteTargetDirPath, ...nesting, `${structure.title}.html`), markup);
 
 				return sectionObj;
 			});

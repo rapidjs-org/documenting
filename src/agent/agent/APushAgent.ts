@@ -1,7 +1,7 @@
 import { normalize } from "path";
 import { IncomingMessage, ServerResponse, createServer } from "http";
 
-import { Renderer } from "../Renderer";
+import { Renderer } from "../renderer/Renderer";
 import { IAgentOptions, AAgent } from "./AAgent";
 
 export interface IPushAgentOptions extends IAgentOptions {

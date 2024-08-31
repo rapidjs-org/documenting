@@ -1,4 +1,4 @@
-import { Renderer } from "../Renderer";
+import { Renderer } from "../renderer/Renderer";
 import { IAgentOptions, AAgent } from "./AAgent";
 
 export interface IPullAgentOptions extends IAgentOptions {
