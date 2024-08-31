@@ -15,49 +15,59 @@ window.rJS__documenting = (() => {
             this.#tocEl = resolveElementReference(tocElementReference);
             this.#contentEl = resolveElementReference(contentElementReference);
         }
-        
-        loadTOC(entryCb = (() => {}), ) {
-            return new Promise(async (resolve) => {
-                const res = await fetch(encodeURI(`${this.#docsRootUrl}/toc.json`))
-                const data = await res.json();
 
-                let previousSection;
-                const render = (section = { sections: this.#data }, nesting = []) => {
-                    const olEl = document.createElement("ol");
-                    section.sections
-                    .forEach((subSection, i) => {
-                        const subNesting = nesting.concat([ subSection.title ]);
-                        const liEl = document.createElement("li");
-                        const aEl = document.createElement("a");
+        async #request(url) {
+            const isStatusClass = (status, classNumber) => status.toString().charAt(0) === classNumber.toString();
 
-                        subSection.nesting = subNesting;
-                        subSection.parent = section;
-                        subSection.previous = previousSection;
+            let res;
+            do {
+                res = await fetch(url);
+                url = res.headers["location"];
+            } while(isStatusClass(res.status, 3));
 
-                        (previousSection ?? {}).next = subSection;
-                        previousSection = subSection.sections ? previousSection : subSection;
-                        
-                        aEl.textContent = subSection.caption;
-                        liEl.appendChild(aEl);
+            if(!isStatusClass(res.status, 2)) throw res.status;
 
-                        entryCb(aEl, subNesting);
+            return res;
+        }
 
-                        (subSection.title !== "index" || subSection.section)
-                        && olEl.appendChild(liEl);
-                        subSection.sections
-                        && liEl.appendChild(render(subSection, subNesting));
-                    });
-                    return olEl;
-                };
+        async loadTOC(entryCb = (() => {}), ) {
+            const res = await this.#request(encodeURI(`${this.#docsRootUrl}/toc.json`));
+            const data = await res.json();
 
-                this.#data = data;
-                this.#tocEl.appendChild(render());
-                
-                resolve(this);
-            });
+            let previousSection;
+            const render = (section = { sections: this.#data }, nesting = []) => {
+                const olEl = document.createElement("ol");
+                section.sections
+                .forEach((subSection, i) => {
+                    const subNesting = nesting.concat([ subSection.title ]);
+                    const liEl = document.createElement("li");
+                    const aEl = document.createElement("a");
+
+                    subSection.nesting = subNesting;
+                    subSection.parent = section;
+                    subSection.previous = previousSection;
+
+                    (previousSection ?? {}).next = subSection;
+                    previousSection = subSection.sections ? previousSection : subSection;
+                    
+                    aEl.textContent = subSection.caption;
+                    liEl.appendChild(aEl);
+
+                    entryCb(aEl, subNesting);
+
+                    (subSection.title !== "index" || subSection.section)
+                    && olEl.appendChild(liEl);
+                    subSection.sections
+                    && liEl.appendChild(render(subSection, subNesting));
+                });
+                return olEl;
+            };
+
+            this.#data = data;
+            this.#tocEl.appendChild(render());
         }
         
-        loadArticle(nesting) {
+        async loadArticle(nesting) {
             nesting = (nesting ?? []).length ? nesting : [ "index" ];
             
             const remainingNesting = [ ...nesting ];
@@ -83,31 +93,23 @@ window.rJS__documenting = (() => {
                 && nesting.push(currentSection.sections[0].title);
             } while(remainingNesting.length);
             
-            return new Promise(async (resolve, reject) => {
-                const res = await fetch(encodeURI(`${
-                    this.#docsRootUrl
-                }/${
-                    nesting.slice(0, -1).join("/")
-                }/${
-                    [ nesting ]
-                    .flat()
-                    .slice(-1)[0]
-                    .replace(/(\.html)?$/i, ".html")
-                }`));
+            const res = await this.#request(encodeURI(`${
+                this.#docsRootUrl
+            }/${
+                nesting.slice(0, -1).join("/")
+            }/${
+                [ nesting ]
+                .flat()
+                .slice(-1)[0]
+                .replace(/(\.html)?$/i, ".html")
+            }`));
 
-                if(res.status.toString().charAt(0) !== "2") {
-                    reject(res.status);
+            const markup = await res.text();
 
-                    return;
-                }
+            this.#contentEl
+            .innerHTML = markup;
 
-                const markup = await res.text();
-
-                this.#contentEl
-                .innerHTML = markup;
-
-                resolve(currentSection);
-            });
+            return currentSection;
         }
     }
     
