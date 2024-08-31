@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "description": "Unopinionated Markdown-based documentation framework with software specific syntax extensions.",
     "author": "Thassilo Martin Schiepanski",
-    "homepage": "https://github.com/rapidjs.org/docs#readme",
+    "homepage": "https://github.com/rapidjs-org/documenting#readme",
     "keywords": [
         "documenting",
         "documentation",
@@ -12,10 +12,10 @@
     ],
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/rapidjs.org/docs.git"
+        "url": "git+https://github.com/rapidjs-org/documenting.git"
     },
     "bugs": {
-        "url": "https://github.com/rapidjs.org/docs/issues"
+        "url": "https://github.com/rapidjs-org/documenting/issues"
     },
     "main": "./build/agent/api.js",
     "types": "./types/api.d.ts",

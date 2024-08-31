@@ -1,6 +1,6 @@
 # rJS Documenting
 
-Headless, unopinionated documentation framework for heterogeneous Markdown sources – with syntax extensions for software documentation.
+Headless documentation framework for heterogeneous Markdown sources – with syntax extensions for software documentation.
 
 ``` cli
 npm install -D @rapidjs-org/documenting
@@ -10,14 +10,14 @@ Documentation sites represent a content-heavy application type. It is thus commo
 
 ## Renderer
 
-The fundamental Markdown to HTML transpiler used with rJS Documenting is [markdown-it](https://github.com/markdown-it/markdown-it). It is abstracted by the `Renderer` class that can be configured just as *markdownit* instances. Furthermore, extra rules can be disabled if desired. The renderer is activated from within individual agents.
+The fundamental Markdown to HTML transpiler used with rJS Documenting is [markdown-it](https://github.com/markdown-it/markdown-it). It is abstracted by the `Renderer` class that can be configured just as *markdown-it* instances. Furthermore, extra rules can be disabled if desired. The renderer is activated from within individual agents.
 
 ``` ts
 class Renderer {
 	constructor(
-        configuration: markdownit.PresetName|markdownit.Options = "commonmark",
-        enableExtraRules: boolean = true
-    );
+    configuration: markdownit.PresetName|markdownit.Options = "commonmark",
+    enableExtraRules: boolean = true
+  );
 }
 ```
 
@@ -43,28 +43,28 @@ Upon activation, the renderer reads the sourced file hierarchy and replicates it
 
 ``` json
 [
-    {
-        "title": "basics",
-        "caption": "Basics",
-        "sections": [
-            {
-                "title": "index",
-                "caption": "Basics"
-            },
-            {
-                "title": "usage",
-                "caption": "Usage"
-            }
-            {
-                "title": "commands",
-                "caption": "Commands List"
-            }
-        ],
-    },
-    {
-        "title": "further-reading",
-        "caption": "Further Reading"
-    }
+  {
+    "title": "basics",
+    "caption": "Basics",
+    "sections": [
+      {
+        "title": "index",
+        "caption": "Basics"
+      },
+      {
+        "title": "usage",
+        "caption": "Usage"
+      }
+      {
+        "title": "commands",
+        "caption": "Commands List"
+      }
+    ],
+  },
+  {
+    "title": "further-reading",
+    "caption": "Further Reading"
+  }
 ]
 ```
 
@@ -137,7 +137,7 @@ rJS Documenting provides several agents to maintain an up to date documentation.
 
 ``` ts
 abstract class Agent {
-    start(): Promise<void>;    // Method to be called for starting the agent
+  start(): Promise<void>;    // Method to be called for starting the agent
 }
 ```
 
@@ -147,11 +147,11 @@ The simplest way to implement rJS Documenting is by using the Filesystem Pull Ag
 
 ``` ts
 class FSPullAgent extends Agent {
-    constructor(options: {
-	    targetDirPath: string;  // Path to target directory
-        sourceDirPath: string;  // Path to source directory
+  constructor(options: {
+    targetDirPath: string;  // Path to target directory
+    sourceDirPath: string;  // Path to source directory
 		interval?: number;      // Pull interval in ms
-    }, renderer?: Renderer)
+  }, renderer?: Renderer)
 }
 ```
 
@@ -163,14 +163,14 @@ Instead of pulling from local disc, the GitHub Pull Agent bases on a specified G
 
 ``` ts
 class GHPullAgent extends Agent  {
-    constructor(options: {
-	    targetDirPath: string;  // Path to target file directory
-        account: string;        // GitHub user (or organisation) name
-        repository: string;     // GitHub repository name
-        ref?: string;           // Repository reference ('main' by default)
-        auth?: string;          // GitHub API authentication token (if is private repository)
+  constructor(options: {
+    targetDirPath: string;  // Path to target file directory
+    account: string;        // GitHub user (or organisation) name
+    repository: string;     // GitHub repository name
+    ref?: string;           // Repository reference ('main' by default)
+    auth?: string;          // GitHub API authentication token (if is private repository)
 		interval?: number;      // Pull interval in ms
-    }, renderer?: Renderer)
+  }, renderer?: Renderer)
 }
 ```
 
@@ -180,15 +180,15 @@ Open Source projects commonly provide the documentation as a meta project in a G
 
 ``` ts
 class GHPushAgent extends Agent  {
-    constructor(options: {
-	    targetDirPath: string;  // Path to target file directory
-        account: string;        // GitHub user (or organisation) name
-        repository: string;     // GitHub repository name
-        ref?: string;           // Repository reference ('main' by default)
-        auth?: string;          // GitHub API authentication token (if is private repository)
-        secret?: string;        // GitHub webhook secret
-	    port?: number;          // Port to listen for events on with HTTP (6001 by default)
-    }, renderer?: Renderer)
+  constructor(options: {
+    targetDirPath: string;  // Path to target file directory
+    account: string;        // GitHub user (or organisation) name
+    repository: string;     // GitHub repository name
+    ref?: string;           // Repository reference ('main' by default)
+    auth?: string;          // GitHub API authentication token (if is private repository)
+    secret?: string;        // GitHub webhook secret
+    port?: number;          // Port to listen for events on with HTTP (6001 by default)
+  }, renderer?: Renderer)
 }
 ```
 
@@ -211,22 +211,22 @@ As pointed out, rendered documentation files are supposed to reside in a public 
 
 ``` ts
 class Client {
-    constructor(
-        tocElementReference: HTMLElement,       // Table of contents parent element (DOM element or query string)
-        contentElementReference: HTMLElement,   // Article content parent element (DOM element or query string)
-        docsRootUrl: string = "/docs"           // Pathname of (render) target root directory on public host
-    )
+  constructor(
+    tocElementReference: HTMLElement,       // Table of contents parent element (DOM element or query string)
+    contentElementReference: HTMLElement,   // Article content parent element (DOM element or query string)
+    docsRootUrl: string = "/docs"           // Pathname of (render) target root directory on public host
+  )
 
-    // Load the table of contents
-    async loadTOC(entryCb?: (aEl: HTMLAnchorElement, subNesting: string[]) => void): TTableOfContents
+  // Load the table of contents
+  async loadTOC(entryCb?: (aEl: HTMLAnchorElement, subNesting: string[]) => void): TTableOfContents
 
-    // Load an article given a nesting of identifiers (e.g. [ "basics", "usage" ])
-    async loadArticle(nesting: string[]): ISection & {
-        nesting: string[];
-        parent: ISection;
-        next?: ISection;
-        previous?: ISection;
-    }
+  // Load an article given a nesting of identifiers (e.g. [ "basics", "usage" ])
+  async loadArticle(nesting: string[]): ISection & {
+    nesting: string[];
+    parent: ISection;
+    next?: ISection;
+    previous?: ISection;
+  }
 }
 ```
 
