@@ -30,7 +30,7 @@ window.rJS__documenting = (() => {
             return res;
         }
 
-        async loadTOC(entryCb = (() => {}), ) {
+        async loadTOC(entryCb = (() => {})) {
             const res = await this.#request(encodeURI(`${this.#docsRootUrl}/toc.json`));
             const data = await res.json();
 
@@ -42,7 +42,7 @@ window.rJS__documenting = (() => {
                     const subNesting = nesting.concat([ subSection.title ]);
                     const liEl = document.createElement("li");
                     const aEl = document.createElement("a");
-
+                    
                     subSection.nesting = subNesting;
                     subSection.parent = section;
                     subSection.previous = previousSection;

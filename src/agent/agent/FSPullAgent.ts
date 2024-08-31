@@ -6,8 +6,6 @@ import { IPullAgentOptions, APullAgent } from "./APullAgent";
 
 export interface IFSPullAgentOptions extends IPullAgentOptions {
 	sourceDirPath: string;
-
-	secret?: string;
 }
 
 export class FSPullAgent extends APullAgent<IFSPullAgentOptions> {

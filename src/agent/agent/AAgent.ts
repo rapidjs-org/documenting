@@ -52,7 +52,7 @@ export abstract class AAgent<O extends IAgentOptions> {
 		this.renderer = renderer ?? new Renderer();
 	}
 
-	public abstract start(): void | Promise<void>;
+	public abstract start(): Promise<void>;
 
 	private readDirTemp(relativePath: string = ".", title: string = null): DirectoryStructure {
 		const path: string = join(AAgent.tempDirPath, relativePath);

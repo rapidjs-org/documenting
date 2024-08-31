@@ -41,7 +41,7 @@ setTimeout(() => {
 		.toString()
 		.split(/\n/)[4]
 	)
-	.expected("<table class=\"rJS__documenting--parameter\"><tr><td><code>argument 1</code></td><td><p>Example argument at pos 0.</p></td></tr><tr><td><code>arg2</code></td><td><p>Example argument at pos 1.</p></td></tr><tr><td><code>arg3</code></td><td><p>Example argument at pos 1.</p></td></tr></table>");
+	.expected("<table class=\"rJS__documenting--parameter\"><tr><td><code>argument 1</code></td><td><p>Example argument at pos 0.</p></td></tr><tr><td><code>arg2</code></td><td><p>Example argument at pos 1.</p></td></tr><tr><td><code>arg3</code></td><td><p>Example argument at pos 2.</p></td></tr></table>");
 
 	new UnitTest("Check table of contents file contents (toc.json)")
 	.actual(JSON.parse(readFileSync(join(TARGET_PATH, "./toc.json")).toString()))

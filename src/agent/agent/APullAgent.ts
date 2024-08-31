@@ -19,9 +19,13 @@ export abstract class APullAgent<O extends IPullAgentOptions> extends AAgent<IPu
 		);
 	}
 
-	public start() {
-		this.options.interval && setInterval(() => this.trigger(), this.options.interval);
+	public start(): Promise<void> {
+		return new Promise((resolve) => {
+			this.options.interval && setInterval(() => this.trigger(), this.options.interval);
 
-		this.trigger();
+			this.trigger();
+
+			resolve();
+		});
 	}
 }
