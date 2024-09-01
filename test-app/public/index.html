@@ -32,17 +32,23 @@
         <script>
             addEventListener("DOMContentLoaded", () => {
                 let currentSection;
-
-                const docsClient = new rJS__documenting.Client("#toc", document.querySelector("#content"))
+                
+                const docsClient = new rJS__documenting.Client(
+                    document.querySelector("#content"),
+                    "#toc"
+                )
                 .on("ready", (client) => {
                     client.loadTableOfContents();
-                    client.loadSection();   // index
+                    client.loadSection(
+                        (new URLSearchParams(window.location.search).get("p") ?? "")
+                        .split(/:/g)
+                    );
 
                     console.log("Try loading invalid nesting:");
                     client.loadSection([ "not", "existing" ])
                     .catch(err => console.error(err));
                 })
-                .on("load", (newSection, aEl) => {
+                .on("load", (_, newSection, aEl) => {
                     currentSection = newSection;
                     const updatePagination = identifier => {
                         const el = document.querySelector(`#pagination-${identifier}`);
@@ -59,7 +65,14 @@
                     Array.from(document.querySelectorAll("a.active"))
                     .forEach(aEl => aEl.classList.remove("active"));
                     aEl && aEl.classList.add("active");
+
+                    window.history.pushState(
+                        section.nesting, null,
+                        `${document.location.pathname}?p=${section.nesting.join(":")}`
+                    );
                 });
+
+                addEventListener("popstate", e => docsClient.loadSection(e.state, true));
                 
                 window.loadPreviousArticle = function() {
                     if(!currentSection.previous) return;

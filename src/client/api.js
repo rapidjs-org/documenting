@@ -8,18 +8,20 @@ window.rJS__documenting = (() => {
 
     class Client {
         #docsRootUrl;
-        #tocEl; #contentEl;
+        #contentEl; #tocEl; 
         #nestingAElMap = new Map();
         #eventHandlerCbs = {
             "load": [],
             "ready": []
         };
         
-        constructor(tocElementReference, contentElementReference, docsRootUrl = "/docs") {
+        constructor(contentElementReference, tocElementReference, docsRootUrl = "/docs") {
             this.#docsRootUrl = docsRootUrl;
-            this.#tocEl = resolveElementReference(tocElementReference);
             this.#contentEl = resolveElementReference(contentElementReference);
+            this.#tocEl = resolveElementReference(tocElementReference);
 
+            if(!this.#contentEl) throw new ReferenceError("");
+            
             this.#loadData()
             .then(() => {
                 this.#invokeEventHandlers("ready", this);
@@ -70,8 +72,6 @@ window.rJS__documenting = (() => {
         }
 
         async loadTableOfContents() {
-            await this.#loadData();
-            
             const render = (sections = this.data) => {
                 const olEl = document.createElement("ol");
                 sections
@@ -95,13 +95,15 @@ window.rJS__documenting = (() => {
             };
             
             this.#tocEl.appendChild(render());
-
+            
             return this.data;
         }
         async loadTOC() { return this.loadTableOfContents(); }
         
         async loadSection(nesting, muteEvent = false) { // TODO: Also accept section object
-            nesting = (nesting ?? []).length ? nesting : [ "index" ];
+            nesting = (nesting ?? []).filter((a) => !!a).length
+            ? nesting
+            : [ "index" ];
 
             const remainingNesting = [ ...nesting ];
             let currentSection = { sections: this.data };
@@ -118,7 +120,14 @@ window.rJS__documenting = (() => {
                     break;
                 }
 
-                if(!isValidNesting) throw new ReferenceError("Invalid nesting");
+                if(!isValidNesting) {
+                    this.#invokeEventHandlers(
+                        "load",
+                        new ReferenceError("Invalid nesting")
+                    )
+                    
+                    return;
+                }
 
                 if(remainingNesting.length) continue;
                 
@@ -126,16 +135,26 @@ window.rJS__documenting = (() => {
                 && nesting.push(currentSection.sections[0].title);
             } while(remainingNesting.length);
             
-            const res = await this.#request(encodeURI(`${
-                this.#docsRootUrl
-            }/${
-                nesting.slice(0, -1).join("/")
-            }/${
-                [ nesting ]
-                .flat()
-                .slice(-1)[0]
-                .replace(/(\.html)?$/i, ".html")
-            }`));
+            let res;
+            try {
+                res = await this.#request(encodeURI(`${
+                    this.#docsRootUrl
+                }/${
+                    nesting.slice(0, -1).join("/")
+                }/${
+                    [ nesting ]
+                    .flat()
+                    .slice(-1)[0]
+                    .replace(/(\.html)?$/i, ".html")
+                }`));
+            } catch(err) {
+                this.#invokeEventHandlers(
+                    "load",
+                    err
+                );
+
+                return;
+            }
 
             const markup = await res.text();
 
@@ -145,6 +164,7 @@ window.rJS__documenting = (() => {
             !muteEvent
             && this.#invokeEventHandlers(
                 "load",
+                null,
                 currentSection,
                 this.#nestingAElMap
                 .get(nesting.slice(0, (nesting[nesting.length - 1] === "index") ? -1 : nesting.length).join(":"))

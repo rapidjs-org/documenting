@@ -1,12 +1,12 @@
 # rJS Documenting
 
-Headless documentation framework for heterogeneous Markdown sources – with syntax extensions for software documentation.
+Headless Markdown documentation framework (push or pull) – with syntax extensions for software documentation.
 
 ``` cli
 npm install -D @rapidjs-org/documenting
 ```
 
-Documentation sites represent a content-heavy application type. It is thus common practice for documentations to encode them through Markdown files that are rendered to HTML for display. rJS Documenting is a powerful framework to host documentation sites based on Markdown sources. The framework embodies two components: The essential component is a service agent to regularly render files from a designated source to a directory public to the web. This way, documentation files can be requested like ordinary files and used in an unopinionated way. The second (optional) component is a lean client module that can be loaded from a displaying site context. The client module simplifies access of the rendered documentation resources and the overall documentation structure.
+Documentation sites represent a content-heavy application type. It is thus common practice to maintain Markdown files that are eventually rendered to HTML for display. rJS Documenting is a powerful Markdown documentation framework with a headless API. The framework embodies two components: The essential component is a service agent to regularly render files from a designated source to a directory public to the web. This way, documentation files can be requested like ordinary files and used in an unopinionated way. The second (optional) component is a lean client module that can be loaded from a displaying site context. The client module simplifies access of the rendered documentation resources and the overall documentation structure.
 
 ## Renderer
 
@@ -86,11 +86,11 @@ Extra rules are an optional addition to ubiquitous Markdown syntax defined by rJ
 
 Syntax definitions – as used in ([MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch#syntax)) – represent a specific type of fenced code block. Therefore, rJS Documenting defines the fenced code language `syntax`.
 
-``` md
-\``` syntax
+```` md
+``` syntax
 helloWorld(): string
-\```
 ```
+````
 
 ``` html
 <div class="rJS__documenting--syntax">
@@ -192,7 +192,7 @@ class GHPushAgent extends Agent  {
 }
 ```
 
-#### Example
+### Example
 
 ``` js
 new GHPushAgent({
@@ -220,15 +220,12 @@ class rJS__documenting.Client {
   )
 
   // Load the table of contents
-  async loadTableOfContents(
-    // Callback on each section anchor element with related identifier nesting
-    entryCb?: (aEl: HTMLAnchorElement, nesting: string[]) => void
-  ): void // (alias loadTOC())
+  async loadTableOfContents(): void // (alias loadTOC())
 
   // Load an article given an identifier nesting (e.g. [ "basics", "usage" ])
   async loadSection(
     nesting: string[] = "index",
-    muteEvent: boolean = false
+    muteEvent: boolean = false  // Whether to not emit the 'load' event
   ): ISection & {
     nesting: string[];
     parent: ISection;
@@ -241,30 +238,40 @@ class rJS__documenting.Client {
 }
 ```
 
-| Event | Description |
-| :- | :- |
-| `load` | Invoked each time a section was loaded. |
-| `ready` | Invoked once documentation data was loaded and the client is fully functional. |
+### Events
 
-#### Example
+#### `load`
+
+The load event is invoked each time a section was attempted to be loaded. If an error has occurred, it is passed as the first argument to the handler. Subsequently, the loaded section object (`ISection`), and – if exists – a reference to the related anchor element in the table of contents element are passed.
+
+#### `ready`
+
+The ready event is invoked once when the documentation data was fetched and processed. It is initiated from the constructor call of the `Client` class.
+
+### Example
 
 ``` js
 addEventListener("DOMContentLoaded", () => {
   const docsClient = new rJS__documenting.Client(
-    ".docs-navigation",
-    ".docs-content-body"
+    "#content",
+    document.querySelector("#navigation")
   )
-  .on("load", newSection => {
+  .on("load", (err, newSection) => {
+    if(err) throw err;
+
     window.history.pushState(
       newSection.nesting, null,
-      `${document.location.pathname}?p=${newSection.nesting.join("+")}`
+      `${document.location.pathname}?p=${newSection.nesting.join(":")}`
     );
   })
   .on("ready", client => {
     client.loadTableOfContents();
-    client.loadSection();
+    client.loadSection(
+      (new URLSearchParams(window.location.search).get("p") ?? "")
+      .split(/:/g)
+    );
   });
-  
+
   addEventListener("popstate", e => docsClient.loadSection(e.state, true));
 });
 ```
