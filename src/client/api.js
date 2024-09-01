@@ -3,21 +3,32 @@ window.rJS__documenting = (() => {
         const el = !(elReference instanceof HTMLElement)
         ? document.querySelector(elReference)
         : elReference;
-        if(!el) throw new ReferenceError(`Element reference could not be resolved '${elReference}'`);
         return el;
     }
 
     class Client {
         #docsRootUrl;
         #tocEl; #contentEl;
-        #data;
-        #loadCbs = [];
         #nestingAElMap = new Map();
+        #eventHandlerCbs = {
+            "load": [],
+            "ready": []
+        };
         
         constructor(tocElementReference, contentElementReference, docsRootUrl = "/docs") {
             this.#docsRootUrl = docsRootUrl;
             this.#tocEl = resolveElementReference(tocElementReference);
             this.#contentEl = resolveElementReference(contentElementReference);
+
+            this.#loadData()
+            .then(() => {
+                this.#invokeEventHandlers("ready", this);
+            });
+        }
+
+        #invokeEventHandlers(event, ...args) {
+            (this.#eventHandlerCbs[event] ?? [])
+            .forEach((handlerCb) => handlerCb(...args));
         }
 
         async #request(url) {
@@ -35,10 +46,8 @@ window.rJS__documenting = (() => {
         }
 
         async #loadData() {
-            if(this.#data) return;
-
             let previousSection;
-            const render = (section = { sections: this.#data }, nesting = []) => {
+            const render = (section = { sections: this.data }, nesting = []) => {
                 section.sections
                 .forEach((subSection) => {
                     const subNesting = nesting.concat([ subSection.title ]);
@@ -56,14 +65,14 @@ window.rJS__documenting = (() => {
             };
 
             const res = await this.#request(encodeURI(`${this.#docsRootUrl}/toc.json`));
-            this.#data = await res.json();
+            this.data = await res.json();
             render();
         }
 
-        async loadTOC(entryCb = (() => {})) {
+        async loadTableOfContents() {
             await this.#loadData();
             
-            const render = (sections = this.#data) => {
+            const render = (sections = this.data) => {
                 const olEl = document.createElement("ol");
                 sections
                 .forEach((section) => {
@@ -75,7 +84,7 @@ window.rJS__documenting = (() => {
                     
                     this.#nestingAElMap.set(section.nesting.join(":"), aEl);
                     
-                    entryCb(aEl, section.nesting);
+                    aEl.addEventListener("click", () => this.loadSection(section.nesting));
                     
                     (section.title !== "index" || section.sections)
                     && olEl.appendChild(liEl);
@@ -86,15 +95,16 @@ window.rJS__documenting = (() => {
             };
             
             this.#tocEl.appendChild(render());
+
+            return this.data;
         }
+        async loadTOC() { return this.loadTableOfContents(); }
         
-        async loadSection(nesting, muteEvent = false) {
-            await this.#loadData();
-            
+        async loadSection(nesting, muteEvent = false) { // TODO: Also accept section object
             nesting = (nesting ?? []).length ? nesting : [ "index" ];
 
             const remainingNesting = [ ...nesting ];
-            let currentSection = { sections: this.#data };
+            let currentSection = { sections: this.data };
             do {
                 const pivotTitle = remainingNesting.shift();
 
@@ -131,22 +141,26 @@ window.rJS__documenting = (() => {
 
             this.#contentEl
             .innerHTML = markup;
-
+            
             !muteEvent
-            && this.#loadCbs
-            .forEach((loadCb) => {
-                const aElLookupNesting = [ ...nesting ];
-                (aElLookupNesting[aElLookupNesting.length - 1] === "index")
-                && aElLookupNesting.pop();
-                loadCb(currentSection, this.#nestingAElMap.get(aElLookupNesting.join(":")));
-            });
-
-            return currentSection;
+            && this.#invokeEventHandlers(
+                "load",
+                currentSection,
+                this.#nestingAElMap
+                .get(nesting.slice(0, (nesting[nesting.length - 1] === "index") ? -1 : nesting.length).join(":"))
+            );
+            
+            return Object.assign({}, currentSection);
         }
+        async load(...args) { return this.loadSection(...args); }
 
-        onload(loadCb) {
-            if(!(loadCb instanceof Function)) throw new TypeError("Argument is not a function");
-            this.#loadCbs.push(loadCb);
+        on(event, handlerCb) {
+            if(!(handlerCb instanceof Function)) throw new TypeError("Event handler argument is not a function");
+            
+            (this.#eventHandlerCbs[event] ?? [])
+            .push(handlerCb);
+            
+            return this;
         }
     }
 

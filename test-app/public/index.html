@@ -31,19 +31,18 @@
         </style>
         <script>
             addEventListener("DOMContentLoaded", () => {
-                const docsClient = new rJS__documenting.Client("#toc", document.querySelector("#content"));
                 let currentSection;
-                
-                window.loadPreviousArticle = function() {
-                    if(!currentSection.previous) return;
-                    docsClient.loadSection(currentSection.previous.nesting);
-                }
-                window.loadNextArticle = function() {
-                    if(!currentSection.next) return;
-                    docsClient.loadSection(currentSection.next.nesting);
-                }
 
-                docsClient.onload((newSection, aEl) => {
+                const docsClient = new rJS__documenting.Client("#toc", document.querySelector("#content"))
+                .on("ready", (client) => {
+                    client.loadTableOfContents();
+                    client.loadSection();   // index
+
+                    console.log("Try loading invalid nesting:");
+                    client.loadSection([ "not", "existing" ])
+                    .catch(err => console.error(err));
+                })
+                .on("load", (newSection, aEl) => {
                     currentSection = newSection;
                     const updatePagination = identifier => {
                         const el = document.querySelector(`#pagination-${identifier}`);
@@ -62,14 +61,14 @@
                     aEl && aEl.classList.add("active");
                 });
                 
-                docsClient.loadTOC((articleLinkEl, articleNesting) => {
-                    articleLinkEl.addEventListener("click", () => docsClient.loadSection(articleNesting));
-                });
-                docsClient.loadSection();
-
-                console.log("Try loading invalid nesting:");
-                docsClient.loadSection([ "not", "existing" ])
-                .catch(err => console.error(err));
+                window.loadPreviousArticle = function() {
+                    if(!currentSection.previous) return;
+                    docsClient.loadSection(currentSection.previous.nesting);
+                }
+                window.loadNextArticle = function() {
+                    if(!currentSection.next) return;
+                    docsClient.loadSection(currentSection.next.nesting);
+                }
             });
         </script>
     </head>

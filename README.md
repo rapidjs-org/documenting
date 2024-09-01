@@ -211,6 +211,8 @@ As pointed out, rendered documentation files are supposed to reside in a public 
 
 ``` ts
 class rJS__documenting.Client {
+  data: TTableOfContents
+
   constructor(
     tocElementReference: HTMLElement,       // Table of contents parent element (DOM element or query string)
     contentElementReference: HTMLElement,   // Article content parent element (DOM element or query string)
@@ -218,10 +220,10 @@ class rJS__documenting.Client {
   )
 
   // Load the table of contents
-  async loadTOC(
+  async loadTableOfContents(
     // Callback on each section anchor element with related identifier nesting
     entryCb?: (aEl: HTMLAnchorElement, nesting: string[]) => void
-  ): TTableOfContents
+  ): void // (alias loadTOC())
 
   // Load an article given an identifier nesting (e.g. [ "basics", "usage" ])
   async loadSection(
@@ -232,32 +234,35 @@ class rJS__documenting.Client {
     parent: ISection;
     next?: ISection;
     previous?: ISection;
-  }
+  } // (alias load())
 
-  // Bind a handler to invoke upon each section load event
-  onload(loadCb: (newSection: ISection, relatedAEl?: HTMLAnchorElement) => void): void
+  // Bind an event listener
+  on(event: string, handlerCb: (...args) => void): this
 }
 ```
+
+| Event | Description |
+| :- | :- |
+| `load` | Invoked each time a section was loaded. |
+| `ready` | Invoked once documentation data was loaded and the client is fully functional. |
 
 #### Example
 
 ``` js
 addEventListener("DOMContentLoaded", () => {
-  const docsClient = new rJS__documenting.Client(".docs-navigation", ".docs-content-body");
-
-  docsClient.onload(section => {
-    console.log(section)
-  });
-
-  docsClient.loadSection();
-  docsClient.loadTOC((aEl, nesting) => {
-    aEl.addEventListener("click", async () => {
-      window.history.pushState(
-        nesting, null,
-        `${document.location.pathname}?p=${nesting.join("+")}`
-      );
-      docsClient.loadSection(nesting);
-    });
+  const docsClient = new rJS__documenting.Client(
+    ".docs-navigation",
+    ".docs-content-body"
+  )
+  .on("load", newSection => {
+    window.history.pushState(
+      newSection.nesting, null,
+      `${document.location.pathname}?p=${newSection.nesting.join("+")}`
+    );
+  })
+  .on("ready", client => {
+    client.loadTableOfContents();
+    client.loadSection();
   });
   
   addEventListener("popstate", e => docsClient.loadSection(e.state, true));
