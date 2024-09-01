@@ -1,8 +1,10 @@
 window.rJS__documenting = (() => {
     function resolveElementReference(elReference) {
-        return !(elReference instanceof HTMLElement)
+        const el = !(elReference instanceof HTMLElement)
         ? document.querySelector(elReference)
         : elReference;
+        if(!el) throw new ReferenceError(`Element reference could not be resolved '${elReference}'`);
+        return el;
     }
 
     class Client {
@@ -30,15 +32,21 @@ window.rJS__documenting = (() => {
             return res;
         }
 
-        async loadTOC(entryCb = (() => {})) {
-            const res = await this.#request(encodeURI(`${this.#docsRootUrl}/toc.json`));
-            const data = await res.json();
+        async #loadData() {
+            if(this.#data) return;
 
+            const res = await this.#request(encodeURI(`${this.#docsRootUrl}/toc.json`));
+            this.#data = await res.json();
+        }
+
+        async loadTOC(entryCb = (() => {})) {
+            await this.#loadData();
+            
             let previousSection;
             const render = (section = { sections: this.#data }, nesting = []) => {
                 const olEl = document.createElement("ol");
                 section.sections
-                .forEach((subSection, i) => {
+                .forEach((subSection) => {
                     const subNesting = nesting.concat([ subSection.title ]);
                     const liEl = document.createElement("li");
                     const aEl = document.createElement("a");
@@ -62,21 +70,22 @@ window.rJS__documenting = (() => {
                 });
                 return olEl;
             };
-
-            this.#data = data;
+            
             this.#tocEl.appendChild(render());
         }
         
         async loadArticle(nesting) {
+            await this.#loadData();
+
             nesting = (nesting ?? []).length ? nesting : [ "index" ];
-            
+
             const remainingNesting = [ ...nesting ];
             let currentSection = { sections: this.#data };
             do {
                 const pivotTitle = remainingNesting.shift();
 
                 let isValidNesting = false;
-                for(const section of currentSection.sections) {
+                for(const section of (currentSection.sections ?? [])) {
                     if(section.title !== pivotTitle) continue;
 
                     currentSection = section;

@@ -34,5 +34,5 @@ http
     res.end();
 })
 .listen(PORT, () => {
-    console.log(`\x1b[34m\x1b[2mTest documentation app running at \x1b[22m\x1b[4mhttp://localhost:${PORT}\x1b[24m.\x1b[0m`)
+    console.log(`\x1b[34m\x1b[2mTest documentation app running at \x1b[22m\x1b[4mhttp://localhost:${PORT}\x1b[24m\x1b[2m.\x1b[0m`)
 });

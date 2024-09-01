@@ -70,9 +70,9 @@ Upon activation, the renderer reads the sourced file hierarchy and replicates it
 
 ``` ts
 interface ISection {
-    title: string;
-    caption: string;
-    sections?: ISection[];
+  title: string;
+  caption: string;
+  sections?: ISection[];
 }
 
 type TTableOfContents = ISection[]
@@ -198,11 +198,11 @@ class GHPushAgent extends Agent  {
 new GHPushAgent({
     targetDirPath: "./public/docs/",
     account: "rapidjs-org",
-    repository: "documenting"
-    secret: "X5QgcpFc1a";
+    repository: "documenting",
+    secret: "X5QgcpFc1a"
 })
 .start()
-.then(() => console.log("Docs agent running..."));
+.then(() => console.log("Docs agent running…"));
 ```
 
 ## Client Module
@@ -221,7 +221,7 @@ class Client {
   async loadTOC(entryCb?: (aEl: HTMLAnchorElement, subNesting: string[]) => void): TTableOfContents
 
   // Load an article given a nesting of identifiers (e.g. [ "basics", "usage" ])
-  async loadArticle(nesting: string[]): ISection & {
+  async loadArticle(nesting: string[] = [ "index" ]): ISection & {
     nesting: string[];
     parent: ISection;
     next?: ISection;
