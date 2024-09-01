@@ -22,6 +22,9 @@
                 color: firebrick;
                 text-decoration: underline;
             }
+            a.active {
+                font-weight: bold;
+            }
             .hide {
                 visibility: hidden;
             }
@@ -40,7 +43,7 @@
                     docsClient.loadSection(currentSection.next.nesting);
                 }
 
-                docsClient.onload(newSection => {
+                docsClient.onload((newSection, aEl) => {
                     currentSection = newSection;
                     const updatePagination = identifier => {
                         const el = document.querySelector(`#pagination-${identifier}`);
@@ -53,6 +56,10 @@
                     };
                     updatePagination("previous");
                     updatePagination("next");
+
+                    Array.from(document.querySelectorAll("a.active"))
+                    .forEach(aEl => aEl.classList.remove("active"));
+                    aEl && aEl.classList.add("active");
                 });
                 
                 docsClient.loadTOC((articleLinkEl, articleNesting) => {

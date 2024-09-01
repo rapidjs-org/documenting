@@ -12,6 +12,7 @@ window.rJS__documenting = (() => {
         #tocEl; #contentEl;
         #data;
         #loadCbs = [];
+        #nestingAElMap = new Map();
         
         constructor(tocElementReference, contentElementReference, docsRootUrl = "/docs") {
             this.#docsRootUrl = docsRootUrl;
@@ -71,7 +72,9 @@ window.rJS__documenting = (() => {
                     
                     aEl.textContent = section.caption;
                     liEl.appendChild(aEl);
-
+                    
+                    this.#nestingAElMap.set(section.nesting.join(":"), aEl);
+                    
                     entryCb(aEl, section.nesting);
                     
                     (section.title !== "index" || section.sections)
@@ -87,7 +90,7 @@ window.rJS__documenting = (() => {
         
         async loadSection(nesting, muteEvent = false) {
             await this.#loadData();
-
+            
             nesting = (nesting ?? []).length ? nesting : [ "index" ];
 
             const remainingNesting = [ ...nesting ];
@@ -131,7 +134,12 @@ window.rJS__documenting = (() => {
 
             !muteEvent
             && this.#loadCbs
-            .forEach((loadCb) => loadCb(currentSection));
+            .forEach((loadCb) => {
+                const aElLookupNesting = [ ...nesting ];
+                (aElLookupNesting[aElLookupNesting.length - 1] === "index")
+                && aElLookupNesting.pop();
+                loadCb(currentSection, this.#nestingAElMap.get(aElLookupNesting.join(":")));
+            });
 
             return currentSection;
         }

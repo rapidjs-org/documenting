@@ -235,7 +235,7 @@ class rJS__documenting.Client {
   }
 
   // Bind a handler to invoke upon each section load event
-  onload(loadCb: (newSection: ISection) => void): void
+  onload(loadCb: (newSection: ISection, relatedAEl?: HTMLAnchorElement) => void): void
 }
 ```
 
