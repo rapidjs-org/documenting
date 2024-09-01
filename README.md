@@ -224,14 +224,18 @@ class rJS__documenting.Client {
   ): TTableOfContents
 
   // Load an article given an identifier nesting (e.g. [ "basics", "usage" ])
-  async loadArticle(
-    nesting: string[] = "index"
+  async loadSection(
+    nesting: string[] = "index",
+    muteEvent: boolean = false
   ): ISection & {
     nesting: string[];
     parent: ISection;
     next?: ISection;
     previous?: ISection;
   }
+
+  // Bind a handler to invoke upon each section load event
+  onload(loadCb: (newSection: ISection) => void): void
 }
 ```
 
@@ -239,22 +243,24 @@ class rJS__documenting.Client {
 
 ``` js
 addEventListener("DOMContentLoaded", () => {
-  const docsClient = new rJS__documenting.Client("#nav", "#content");
+  const docsClient = new rJS__documenting.Client(".docs-navigation", ".docs-content-body");
 
-  docsClient.loadArticle(); // index
+  docsClient.onload(section => {
+    console.log(section)
+  });
 
+  docsClient.loadSection();
   docsClient.loadTOC((aEl, nesting) => {
     aEl.addEventListener("click", async () => {
       window.history.pushState(
         nesting, null,
-          `${document.location.pathname}?p=${nesting.join("+")}`
+        `${document.location.pathname}?p=${nesting.join("+")}`
       );
-      
-      const section = await docsClient.loadArticle(nesting);
-      previousSection = section.previous;
-      nextSection = section.next;
+      docsClient.loadSection(nesting);
     });
   });
+  
+  addEventListener("popstate", e => docsClient.loadSection(e.state, true));
 });
 ```
 

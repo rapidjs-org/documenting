@@ -11,7 +11,8 @@ window.rJS__documenting = (() => {
         #docsRootUrl;
         #tocEl; #contentEl;
         #data;
-
+        #loadCbs = [];
+        
         constructor(tocElementReference, contentElementReference, docsRootUrl = "/docs") {
             this.#docsRootUrl = docsRootUrl;
             this.#tocEl = resolveElementReference(tocElementReference);
@@ -35,38 +36,48 @@ window.rJS__documenting = (() => {
         async #loadData() {
             if(this.#data) return;
 
-            const res = await this.#request(encodeURI(`${this.#docsRootUrl}/toc.json`));
-            this.#data = await res.json();
-        }
-
-        async loadTOC(entryCb = (() => {})) {
-            await this.#loadData();
-            
             let previousSection;
             const render = (section = { sections: this.#data }, nesting = []) => {
-                const olEl = document.createElement("ol");
                 section.sections
                 .forEach((subSection) => {
                     const subNesting = nesting.concat([ subSection.title ]);
-                    const liEl = document.createElement("li");
-                    const aEl = document.createElement("a");
-                    
+
                     subSection.nesting = subNesting;
                     subSection.parent = section;
                     subSection.previous = previousSection;
 
                     (previousSection ?? {}).next = subSection;
                     previousSection = subSection.sections ? previousSection : subSection;
+
+                    subSection.sections
+                    && render(subSection, subNesting);
+                });
+            };
+
+            const res = await this.#request(encodeURI(`${this.#docsRootUrl}/toc.json`));
+            this.#data = await res.json();
+            render();
+        }
+
+        async loadTOC(entryCb = (() => {})) {
+            await this.#loadData();
+            
+            const render = (sections = this.#data) => {
+                const olEl = document.createElement("ol");
+                sections
+                .forEach((section) => {
+                    const liEl = document.createElement("li");
+                    const aEl = document.createElement("a");
                     
-                    aEl.textContent = subSection.caption;
+                    aEl.textContent = section.caption;
                     liEl.appendChild(aEl);
 
-                    entryCb(aEl, subNesting);
-
-                    (subSection.title !== "index" || subSection.section)
+                    entryCb(aEl, section.nesting);
+                    
+                    (section.title !== "index" || section.sections)
                     && olEl.appendChild(liEl);
-                    subSection.sections
-                    && liEl.appendChild(render(subSection, subNesting));
+                    section.sections
+                    && liEl.appendChild(render(section.sections));
                 });
                 return olEl;
             };
@@ -74,10 +85,10 @@ window.rJS__documenting = (() => {
             this.#tocEl.appendChild(render());
         }
         
-        async loadArticle(nesting) {
+        async loadSection(nesting, muteEvent = false) {
             await this.#loadData();
 
-            nesting = [ (nesting ?? []).length ? nesting : "index" ].flat();
+            nesting = (nesting ?? []).length ? nesting : [ "index" ];
 
             const remainingNesting = [ ...nesting ];
             let currentSection = { sections: this.#data };
@@ -118,9 +129,18 @@ window.rJS__documenting = (() => {
             this.#contentEl
             .innerHTML = markup;
 
+            !muteEvent
+            && this.#loadCbs
+            .forEach((loadCb) => loadCb(currentSection));
+
             return currentSection;
         }
+
+        onload(loadCb) {
+            if(!(loadCb instanceof Function)) throw new TypeError("Argument is not a function");
+            this.#loadCbs.push(loadCb);
+        }
     }
-    
+
     return { Client };
 })();

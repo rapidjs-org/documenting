@@ -29,20 +29,19 @@
         <script>
             addEventListener("DOMContentLoaded", () => {
                 const docsClient = new rJS__documenting.Client("#toc", document.querySelector("#content"));
-                
                 let currentSection;
+                
                 window.loadPreviousArticle = function() {
                     if(!currentSection.previous) return;
-                    loadArticle(currentSection.previous.nesting);
+                    docsClient.loadSection(currentSection.previous.nesting);
                 }
                 window.loadNextArticle = function() {
                     if(!currentSection.next) return;
-                    loadArticle(currentSection.next.nesting);
+                    docsClient.loadSection(currentSection.next.nesting);
                 }
 
-                async function loadArticle(articleNesting) {
-                    currentSection = await docsClient.loadArticle(articleNesting);
-
+                docsClient.onload(newSection => {
+                    currentSection = newSection;
                     const updatePagination = identifier => {
                         const el = document.querySelector(`#pagination-${identifier}`);
                         if(!currentSection[identifier]) {
@@ -54,18 +53,16 @@
                     };
                     updatePagination("previous");
                     updatePagination("next");
-                }
+                });
                 
                 docsClient.loadTOC((articleLinkEl, articleNesting) => {
-                    articleLinkEl.addEventListener("click", () => loadArticle(articleNesting));
-                })
-                .then(async () => {
-                    console.log("Try loading invalid nesting:");
-                    await loadArticle();
-
-                    loadArticle([ "not", "existing" ])
-                    .catch(err => console.error(err));
+                    articleLinkEl.addEventListener("click", () => docsClient.loadSection(articleNesting));
                 });
+                docsClient.loadSection();
+
+                console.log("Try loading invalid nesting:");
+                docsClient.loadSection([ "not", "existing" ])
+                .catch(err => console.error(err));
             });
         </script>
     </head>
