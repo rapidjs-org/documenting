@@ -210,7 +210,7 @@ new GHPushAgent({
 As pointed out, rendered documentation files are supposed to reside in a public web directory. The documentation can inherently be presented based on those static files in a preferred way. However, the provided rJS Documenting client module helps with working with the documentation files through a simple API.
 
 ``` ts
-class Client {
+class rJS__documenting.Client {
   constructor(
     tocElementReference: HTMLElement,       // Table of contents parent element (DOM element or query string)
     contentElementReference: HTMLElement,   // Article content parent element (DOM element or query string)
@@ -218,16 +218,44 @@ class Client {
   )
 
   // Load the table of contents
-  async loadTOC(entryCb?: (aEl: HTMLAnchorElement, subNesting: string[]) => void): TTableOfContents
+  async loadTOC(
+    // Callback on each section anchor element with related identifier nesting
+    entryCb?: (aEl: HTMLAnchorElement, nesting: string[]) => void
+  ): TTableOfContents
 
-  // Load an article given a nesting of identifiers (e.g. [ "basics", "usage" ])
-  async loadArticle(nesting: string[] = [ "index" ]): ISection & {
+  // Load an article given an identifier nesting (e.g. [ "basics", "usage" ])
+  async loadArticle(
+    nesting: string[] = "index"
+  ): ISection & {
     nesting: string[];
     parent: ISection;
     next?: ISection;
     previous?: ISection;
   }
 }
+```
+
+#### Example
+
+``` js
+addEventListener("DOMContentLoaded", () => {
+  const docsClient = new rJS__documenting.Client("#nav", "#content");
+
+  docsClient.loadArticle(); // index
+
+  docsClient.loadTOC((aEl, nesting) => {
+    aEl.addEventListener("click", async () => {
+      window.history.pushState(
+        nesting, null,
+          `${document.location.pathname}?p=${nesting.join("+")}`
+      );
+      
+      const section = await docsClient.loadArticle(nesting);
+      previousSection = section.previous;
+      nextSection = section.next;
+    });
+  });
+});
 ```
 
 ##

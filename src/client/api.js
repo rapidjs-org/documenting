@@ -77,7 +77,7 @@ window.rJS__documenting = (() => {
         async loadArticle(nesting) {
             await this.#loadData();
 
-            nesting = (nesting ?? []).length ? nesting : [ "index" ];
+            nesting = [ (nesting ?? []).length ? nesting : "index" ].flat();
 
             const remainingNesting = [ ...nesting ];
             let currentSection = { sections: this.#data };
