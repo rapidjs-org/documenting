@@ -94,8 +94,9 @@ window.rJS__documenting = (() => {
                 return olEl;
             };
             
+            this.#tocEl.innerHTML = "";
             this.#tocEl.appendChild(render());
-            
+
             return this.data;
         }
         async loadTOC() { return this.loadTableOfContents(); }
@@ -113,7 +114,7 @@ window.rJS__documenting = (() => {
                 let isValidNesting = false;
                 for(const section of (currentSection.sections ?? [])) {
                     if(section.title !== pivotTitle) continue;
-
+                    
                     currentSection = section;
                     isValidNesting = true;
                     
@@ -129,12 +130,12 @@ window.rJS__documenting = (() => {
                     return;
                 }
 
-                if(remainingNesting.length) continue;
-                
-                currentSection.sections
-                && nesting.push(currentSection.sections[0].title);
+                if(remainingNesting.length || !currentSection.sections) continue;
+
+                nesting.push(currentSection.sections[0].title);
+                remainingNesting.push(currentSection.sections[0].title);
             } while(remainingNesting.length);
-            
+
             let res;
             try {
                 res = await this.#request(encodeURI(`${
@@ -170,7 +171,7 @@ window.rJS__documenting = (() => {
                 .get(nesting.slice(0, (nesting[nesting.length - 1] === "index") ? -1 : nesting.length).join(":"))
             );
             
-            return Object.assign({}, currentSection);
+            return currentSection;
         }
         async load(...args) { return this.loadSection(...args); }
 
