@@ -3,7 +3,7 @@
 Headless Markdown documentation framework (push or pull) – with syntax extensions for software documentation.
 
 ``` cli
-npm install -D @rapidjs-org/documenting
+npm install -D @rapidjs.org/documenting
 ```
 
 Documentation sites represent a content-heavy application type. It is thus common practice to maintain Markdown files that are eventually rendered to HTML for display. rJS Documenting is a powerful Markdown documentation framework with a headless API. The framework embodies two components: The essential component is a service agent to regularly render files from a designated source to a directory public to the web. This way, documentation files can be requested like ordinary files and used in an unopinionated way. The second (optional) component is a lean client module that can be loaded from a displaying site context. The client module simplifies access of the rendered documentation resources and the overall documentation structure.
@@ -14,7 +14,7 @@ The fundamental Markdown to HTML transpiler used with rJS Documenting is [markdo
 
 ``` ts
 class Renderer {
-	constructor(
+  constructor(
     configuration: markdownit.PresetName|markdownit.Options = "commonmark",
     enableExtraRules: boolean = true
   );
@@ -206,6 +206,10 @@ new GHPushAgent({
 ```
 
 ## Client Module
+
+``` html
+<script src="https://cdn.jsdelivr.net/npm/@rapidjs.org/documenting@latest/build/client/rjs.documenting.js"></script>
+```
 
 As pointed out, rendered documentation files are supposed to reside in a public web directory. The documentation can inherently be presented based on those static files in a preferred way. However, the provided rJS Documenting client module helps with working with the documentation files through a simple API.
 
