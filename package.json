@@ -1,6 +1,6 @@
 {
     "name": "@rapidjs.org/documenting",
-    "version": "0.1.0",
+    "version": "0.0.9",
     "description": "Unopinionated Markdown-based documentation framework with software specific syntax extensions.",
     "author": "Thassilo Martin Schiepanski",
     "homepage": "https://github.com/rapidjs-org/documenting#readme",
@@ -35,12 +35,15 @@
         "format": "npx prettier --check ./src/agent/**/*.ts",
         "format:fix": "npx prettier --write ./src/agent/**/*.ts",
         "test": "npx rjs-test unit ./test",
-        "test:app": "npm run build:client && node ./test-app/server.js"
+        "test:app": "npm run build:client && node ./test-app/server.js",
+        "release:minor": "npm run build && npm run test && npx release --minor",
+        "release:patch": "npm run build && npm run test && npx release --patch"
     },
     "devDependencies": {
         "@eslint/js": "^9.2.0",
         "@rapidjs.org/testing": "^0.1.3",
         "@rapidjs.org/testing-unit": "^0.1.0",
+        "@t-ski/gh-npm-release": "github:t-ski/gh-npm-release",
         "@types/markdown-it": "^14.1.2",
         "@types/node": "^22.5.0",
         "@typescript-eslint/eslint-plugin": "^7.8.0",
