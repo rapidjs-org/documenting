@@ -5,7 +5,9 @@ export interface IPullAgentOptions extends IAgentOptions {
 	interval: number;
 }
 
-export abstract class APullAgent<O extends IPullAgentOptions> extends AAgent<IPullAgentOptions> {
+export abstract class APullAgent<
+	O extends IPullAgentOptions
+> extends AAgent<IPullAgentOptions> {
 	protected readonly options: O;
 
 	constructor(options: O, renderer: Renderer) {
@@ -21,7 +23,8 @@ export abstract class APullAgent<O extends IPullAgentOptions> extends AAgent<IPu
 
 	public start(): Promise<void> {
 		return new Promise((resolve) => {
-			this.options.interval && setInterval(() => this.trigger(), this.options.interval);
+			this.options.interval &&
+				setInterval(() => this.trigger(), this.options.interval);
 
 			this.trigger();
 

@@ -12,7 +12,9 @@ export class FSPullAgent extends APullAgent<IFSPullAgentOptions> {
 	protected writeTempDir() {
 		super.writeTempDir();
 
-		const sourceDirPath: string = resolve(this.options.sourceDirPath ?? ".");
+		const sourceDirPath: string = resolve(
+			this.options.sourceDirPath ?? "."
+		);
 
 		if (!existsSync(sourceDirPath)) return;
 

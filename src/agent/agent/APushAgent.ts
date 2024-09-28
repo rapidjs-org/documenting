@@ -8,7 +8,9 @@ export interface IPushAgentOptions extends IAgentOptions {
 	port: number;
 }
 
-export abstract class APushAgent<O extends IPushAgentOptions> extends AAgent<IPushAgentOptions> {
+export abstract class APushAgent<
+	O extends IPushAgentOptions
+> extends AAgent<IPushAgentOptions> {
 	protected readonly options: O;
 
 	constructor(options: O, renderer?: Renderer) {
@@ -38,7 +40,11 @@ export abstract class APushAgent<O extends IPushAgentOptions> extends AAgent<IPu
 						return;
 					}
 
-					if (!["/", "/documentation", "/docs"].includes(normalize(req.url))) {
+					if (
+						!["/", "/documentation", "/docs"].includes(
+							normalize(req.url)
+						)
+					) {
 						this.respond(res, 404);
 
 						return;
@@ -50,7 +56,8 @@ export abstract class APushAgent<O extends IPushAgentOptions> extends AAgent<IPu
 					});
 					req.on("end", () => {
 						try {
-							const payload: string = Buffer.concat(body).toString();
+							const payload: string =
+								Buffer.concat(body).toString();
 
 							this.trigger(payload, req.headers);
 

@@ -23,7 +23,9 @@ export default [
 							.split(/\|/g)
 							.map((cell: string, i: number) => {
 								return `<td>${i === 0 ? "<code>" : "<p>"}${
-									i === 0 ? cell.trim().replace(/^`|`$/g, "") : cell.trim()
+									i === 0
+										? cell.trim().replace(/^`|`$/g, "")
+										: cell.trim()
 								}${i === 0 ? "</code>" : "</p>"}</td>`;
 							})
 							.join("")}</tr>`;

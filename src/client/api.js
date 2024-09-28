@@ -26,6 +26,18 @@ window.rJS__documenting = (() => {
             .then(() => {
                 this.#invokeEventHandlers("ready", this);
             });
+
+            window.addEventListener("scroll", () => this.#lazyLoadAssets());
+        }
+
+        #lazyLoadAssets() {
+            Array.from(this.#contentEl.querySelectorAll("[data-src]"))
+            .forEach((assetSrcEl) => {
+                if(assetSrcEl.getBoundingClientRect().y > (window.innerHeight * 1.5)) return;
+                
+                assetSrcEl.setAttribute("src", `${this.#docsRootUrl}/${assetSrcEl.getAttribute("data-src")}`)
+                assetSrcEl.removeAttribute("data-src");
+            });
         }
 
         #invokeEventHandlers(event, ...args) {
@@ -161,6 +173,7 @@ window.rJS__documenting = (() => {
 
             this.#contentEl
             .innerHTML = markup;
+            setTimeout(() => this.#lazyLoadAssets(), 0);
             
             !muteEvent
             && this.#invokeEventHandlers(

@@ -1,5 +1,5 @@
 const { join } = require("path");
-const { readFileSync } = require("fs");
+const { readFileSync, existsSync } = require("fs");
 
 const util = require("./util");
 
@@ -26,7 +26,21 @@ setTimeout(() => {
 		.split(/\n/)[0]
 	)
 	.expected("<h1>index (0.0)</h1>");
-
+	
+	new UnitTest("Check asset copy (_assets/a/img-nested.png)")
+	.actual(
+		existsSync(join(TARGET_PATH, "./_assets/a/img-nested.png"))
+	)
+	.expected(true);
+	
+	new UnitTest("Partially validate asset referencing file contents (a/b.html)")
+	.actual(
+		readFileSync(join(TARGET_PATH, "./a/b.html"))
+		.toString()
+		.split(/\n/g)[2]
+	)
+	.expected("<p><img data-src=\"_assets/a/./img-nested.png\" alt=\"IMG local\" /></p>");
+	
 	new UnitTest("Validate custom rule 'syntax definition'")
 	.actual(
 		readFileSync(join(TARGET_PATH, "./custom-rules.html"))
@@ -42,7 +56,7 @@ setTimeout(() => {
 		.split(/\n/)[4]
 	)
 	.expected("<table class=\"rJS__documenting--parameter\"><tr><td><code>argument 1</code></td><td><p>Example argument at pos 0.</p></td></tr><tr><td><code>arg2</code></td><td><p>Example argument at pos 1.</p></td></tr><tr><td><code>arg3</code></td><td><p>Example argument at pos 2.</p></td></tr></table>");
-
+	
 	new UnitTest("Check table of contents file contents (toc.json)")
 	.actual(JSON.parse(readFileSync(join(TARGET_PATH, "./toc.json")).toString()))
 	.expected([

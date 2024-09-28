@@ -1,5 +1,5 @@
-import { mkdirSync, writeFileSync } from "fs";
-import { resolve, join } from "path";
+import { cpSync, mkdirSync, writeFileSync } from "fs";
+import { resolve, join, dirname } from "path";
 
 import markdownit from "markdown-it";
 
@@ -8,14 +8,11 @@ import { DirectoryStructure } from "../structure/DirectoryStructure";
 import { FileStructure } from "../structure/FileStructure";
 import extraRules from "./extra-rules";
 
-const _config = {
-	defaultDocsDirPath: "./docs",
-	tocFileName: "toc"
-};
+import _config from "../_config.json";
 
 interface ISection {
-	title: string;
 	caption: string;
+	title: string;
 
 	sections?: ISection[];
 }
@@ -28,10 +25,15 @@ export class Renderer {
 	private readonly enableExtraRules: boolean;
 	private readonly md: markdownit;
 
-	constructor(configuration?: markdownit.PresetName, enableExtraRules?: boolean);
+	constructor(
+		configuration?: markdownit.PresetName,
+		enableExtraRules?: boolean
+	);
 	constructor(configuration?: markdownit.Options, enableExtraRules?: boolean);
 	constructor(
-		configuration: markdownit.PresetName | markdownit.Options = "commonmark",
+		configuration:
+			| markdownit.PresetName
+			| markdownit.Options = "commonmark",
 		enableExtraRules: boolean = true
 	) {
 		this.md = markdownit(configuration as markdownit.PresetName);
@@ -43,10 +45,18 @@ export class Renderer {
 		&& this.md.use(ExtraRules.syntaxDefinition); */
 	}
 
-	public render(targetDirPath: string, rootDirectoryStructure: DirectoryStructure) {
-		const absoluteTargetDirPath = resolve(targetDirPath ?? _config.defaultDocsDirPath);
+	public render(
+		targetDirPath: string,
+		rootDirectoryStructure: DirectoryStructure
+	) {
+		const absoluteTargetDirPath = resolve(
+			targetDirPath ?? _config.defaultDocsDirPath
+		);
 
-		const renderLevel = (directory: DirectoryStructure, nesting: string[] = []): ISection[] => {
+		const renderLevel = (
+			directory: DirectoryStructure,
+			nesting: string[] = []
+		): ISection[] => {
 			mkdirSync(join(absoluteTargetDirPath, ...nesting), {
 				recursive: true
 			});
@@ -61,7 +71,12 @@ export class Renderer {
 					return {
 						...sectionObj,
 
-						sections: renderLevel(structure, nesting.concat(structure.title ? [structure.title] : []))
+						sections: renderLevel(
+							structure,
+							nesting.concat(
+								structure.title ? [structure.title] : []
+							)
+						)
 					};
 				}
 
@@ -70,9 +85,46 @@ export class Renderer {
 					if (!this.enableExtraRules) break;
 					markdown = extraRule(markdown);
 				}
-				const markup: string = this.md.render(markdown);
 
-				writeFileSync(join(absoluteTargetDirPath, ...nesting, `${structure.title}.html`), markup);
+				let markup: string = this.md.render(markdown);
+
+				directory.relativeAssets.paths.forEach(
+					(relativeAssetPath: string) => {
+						const targetPath: string = join(
+							absoluteTargetDirPath,
+							_config.assetsDirName,
+							...nesting,
+							relativeAssetPath
+						);
+						mkdirSync(dirname(targetPath), {
+							recursive: true
+						});
+						cpSync(
+							join(
+								directory.relativeAssets.absoluteRootPath,
+								relativeAssetPath
+							),
+							targetPath
+						);
+
+						markup = markup.replace(
+							new RegExp(
+								`src=("|')((?:\\.{1,2}/)+)${_config.assetsDirName}/(.*)\\1`,
+								"g"
+							),
+							`data-src=$1${_config.assetsDirName}/${nesting.join("/")}/$2$3$1`
+						);
+					}
+				);
+
+				writeFileSync(
+					join(
+						absoluteTargetDirPath,
+						...nesting,
+						`${structure.title}.html`
+					),
+					markup
+				);
 
 				return sectionObj;
 			});

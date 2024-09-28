@@ -21,7 +21,10 @@ export class GHPullAgent extends APullAgent<IGHPullAgentOptions> {
 		super.writeTempDir();
 
 		return new Promise(async (resolve, reject) => {
-			const requestGitHubAPI = (method: string, url: string): Promise<IncomingMessage> => {
+			const requestGitHubAPI = (
+				method: string,
+				url: string
+			): Promise<IncomingMessage> => {
 				return new Promise((resolve) => {
 					request(
 						url,
@@ -32,11 +35,17 @@ export class GHPullAgent extends APullAgent<IGHPullAgentOptions> {
 								"X-GitHub-Api-Version": "2022-11-28",
 								"User-Agent": "request",
 
-								...(this.options.auth ? { Authorization: `Bearer ${this.options.auth}` } : {})
+								...(this.options.auth
+									? {
+											Authorization: `Bearer ${this.options.auth}`
+										}
+									: {})
 							}
 						},
 						(res: IncomingMessage) => {
-							["2", "3"].includes(res.statusCode.toString().charAt(0))
+							["2", "3"].includes(
+								res.statusCode.toString().charAt(0)
+							)
 								? resolve(res)
 								: reject(new Error(res.statusMessage));
 						}
@@ -53,15 +62,25 @@ export class GHPullAgent extends APullAgent<IGHPullAgentOptions> {
 				"./tarball",
 				this.options.ref ?? "main"
 			)}`;
-			const locRes: IncomingMessage = await requestGitHubAPI("HEAD", endpoint);
+			const locRes: IncomingMessage = await requestGitHubAPI(
+				"HEAD",
+				endpoint
+			);
 
 			const tarpath: string = join(AAgent.tempDirPath, "../repo.tar.gz");
 			const file = createWriteStream(tarpath);
-			const tarRes = await requestGitHubAPI("GET", locRes.headers.location);
+			const tarRes = await requestGitHubAPI(
+				"GET",
+				locRes.headers.location
+			);
 			tarRes.pipe(file);
 			file.on("finish", () => {
 				file.close((err: Error) => {
 					if (err) {
+						rmSync(tarpath, {
+							force: true
+						});
+
 						reject(err);
 
 						return;

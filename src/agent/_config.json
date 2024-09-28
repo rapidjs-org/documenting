@@ -1,0 +1,7 @@
+{
+    "assetsDirName": "_assets",
+    "defaultDocsDirPath": "./docs",
+    "indexArticleName": "index",
+	"tempDirPath": "/tmp/rjs__documenting",
+	"tocFileName": "toc"
+}

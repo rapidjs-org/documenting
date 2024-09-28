@@ -29,7 +29,10 @@ export class GHPushAgent extends APushAgent<TGHPushAgentOptions> {
 		this.pullAgent.start();
 	}
 
-	protected writeTempDir(payload: string, headers: IncomingHttpHeaders): void | Promise<void> {
+	protected writeTempDir(
+		payload: string,
+		headers: IncomingHttpHeaders
+	): void | Promise<void> {
 		super.writeTempDir(payload, headers);
 
 		if (!this.options.secret) {
@@ -38,7 +41,9 @@ export class GHPushAgent extends APushAgent<TGHPushAgentOptions> {
 			return;
 		}
 
-		const signatureHeader: string = [headers["x-hub-signature-256"]].flat()[0];
+		const signatureHeader: string = [
+			headers["x-hub-signature-256"]
+		].flat()[0];
 		if (!signatureHeader) throw new SyntaxError("Invalid hook request");
 
 		const digest = Buffer.from(
