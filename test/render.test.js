@@ -97,7 +97,7 @@ setTimeout(() => {
 				]
 			},
 			{
-				title: "b-_a  a",
+				title: "b-_a-a",
 				caption: "B.B A A (1.1)"
 			}
 			]

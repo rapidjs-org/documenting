@@ -99,7 +99,9 @@ export abstract class AAgent<O extends IAgentOptions> {
 				return false;
 			})
 			.map((dirent: Dirent) => {
-				const title = dirent.name.replace(/^\d\. */i, "");
+				const title = dirent.name
+					.replace(/^\d\. */i, "")
+					.replace(/\s+/g, "-");
 				return dirent.isDirectory()
 					? this.readDirTemp(join(relativePath, dirent.name), title)
 					: new FileStructure(
