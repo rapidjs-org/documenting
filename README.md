@@ -8,6 +8,10 @@ npm install -D @rapidjs.org/documenting
 
 Documentation sites represent a content-heavy application type. It is thus common practice to maintain Markdown files that are eventually rendered to HTML for display. rJS Documenting is a powerful Markdown documentation framework with a headless API. The framework embodies two components: The essential component is a service agent to regularly render files from a designated source to a directory public to the web. This way, documentation files can be requested like ordinary files and used in an unopinionated way. The second (optional) component is a lean client module that can be loaded from a displaying site context. The client module simplifies access of the rendered documentation resources and the overall documentation structure.
 
+1. [Renderer](#renderer)
+1. [Agents](#agents)
+1. [Client](#client)
+
 ## Renderer
 
 The fundamental Markdown to HTML transpiler used with rJS Documenting is [markdown-it](https://github.com/markdown-it/markdown-it). It is abstracted by the `Renderer` class that can be configured just as *markdown-it* instances. Furthermore, extra rules can be disabled if desired. The renderer is activated from within individual agents.
@@ -26,6 +30,8 @@ Upon activation, the renderer reads the sourced file hierarchy and replicates it
 ```
 └─ /documentation
   ├─ 1. basics
+  │  ├─ _assets
+  │  │  └─ img.png
   │  ├─ 1. usage.md
   │  ├─ index.md
   │  └─ 2. commands.md
@@ -77,6 +83,10 @@ interface ISection {
 
 type TTableOfContents = ISection[]
 ```
+
+### Working with Assets
+
+rJS Documenting enables use of assets – like images or videos – in an opinionated way: Within the Markdown source directory, assets are supposed to be stored in a directories named `_assets`. From there, they can be relatively referenced as usual. Upon render, files are automatically copied and accessible from the client module.
 
 ### Extra Rules
 
@@ -205,7 +215,7 @@ new GHPushAgent({
 .then(() => console.log("Docs agent running…"));
 ```
 
-## Client Module
+## Client
 
 ``` html
 <script src="https://cdn.jsdelivr.net/npm/@rapidjs.org/documenting@latest/build/client/rjs.documenting.js"></script>
