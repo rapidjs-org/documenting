@@ -24,9 +24,13 @@ new UnitTest("Check if target directory does exist (after render)")
     })
     .start();
 	
-	resolve(existsSync(TARGET_PATH));
-	
-	setTimeout(() => {	
+	setTimeout(() => {
+		resolve(existsSync(TARGET_PATH));
+		
+		new UnitTest("Check if pivot file exist (a/a.html)")
+		.actual(existsSync(join(TARGET_PATH, "./a/a.html")))
+		.expected(true);
+		
 		new UnitTest("Check if target directory does not exist (after render deletion)")
 		.actual(() => {
 			rmSync(TARGET_PATH, { recursive: true });

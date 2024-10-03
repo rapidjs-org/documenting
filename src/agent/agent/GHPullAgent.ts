@@ -1,7 +1,7 @@
 import { request } from "https";
 import { IncomingMessage } from "http";
 import { join } from "path";
-import { createWriteStream, rmSync } from "fs";
+import { cpSync, createWriteStream, mkdirSync, rmSync } from "fs";
 
 import { extract } from "tar";
 
@@ -12,6 +12,7 @@ export interface IGHPullAgentOptions extends IPullAgentOptions {
 	account: string;
 	repository: string;
 
+	rootPath?: string;
 	ref?: string;
 	auth?: string;
 }
@@ -68,6 +69,10 @@ export class GHPullAgent extends APullAgent<IGHPullAgentOptions> {
 			);
 
 			const tarpath: string = join(AAgent.tempDirPath, "../repo.tar.gz");
+			const untarpath: string = join(AAgent.tempDirPath, "../repo");
+			mkdirSync(untarpath, {
+				recursive: true
+			});
 			const file = createWriteStream(tarpath);
 			const tarRes = await requestGitHubAPI(
 				"GET",
@@ -88,10 +93,20 @@ export class GHPullAgent extends APullAgent<IGHPullAgentOptions> {
 
 					extract({
 						file: tarpath,
-						cwd: AAgent.tempDirPath,
+						cwd: untarpath,
 						strip: 1
 					})
-						.then(resolve)
+						.then(() => {
+							cpSync(
+								join(untarpath, this.options.rootPath ?? "."),
+								AAgent.tempDirPath,
+								{
+									recursive: true
+								}
+							);
+
+							resolve();
+						})
 						.finally(() => {
 							rmSync(tarpath, {
 								force: true

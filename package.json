@@ -34,7 +34,11 @@
         "lint:fix": "npx eslint --fix './src/agent/**/*.ts",
         "format": "npx prettier --check './src/agent/**/*.ts'",
         "format:fix": "npx prettier --write './src/agent/**/*.ts'",
-        "test": "npx rjs-test unit ./test",
+        "test:render": "npx rjs-test unit ./test/FSPullAgent.test.js",
+        "test:FSPullAgent": "npx rjs-test unit ./test/FSPullAgent.test.js",
+        "test:GHPullAgent": "npx rjs-test unit ./test/GHPullAgent.test.js",
+        "test:GHPushAgent": "npx rjs-test unit ./test/GHPushAgent.test.js",
+        "test": "npm run test:FSPullAgent && npm run test:GHPullAgent && npm run test:GHPushAgent && npm run test:render",
         "test-app": "npm run build:client && node ./test-app/server.js",
         "release:minor": "npm run build && npm run test && npx release --minor",
         "release:patch": "npm run build && npm run test && npx release --patch"

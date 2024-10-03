@@ -6,8 +6,8 @@ module.exports.declareTargetPath = function(targetPath) {
         force: true,
         recursive: true
     });
-    
+
     cleanTargetPath();
     
-    //process.on("exit", cleanTargetPath);
+    // process.on("exit", cleanTargetPath);
 };

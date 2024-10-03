@@ -20,10 +20,17 @@ new UnitTest("Check if target directory does exist (after render)")
         targetDirPath: TARGET_PATH,
         interval: 0,
         account: "rapidjs-org",
-        repository: "testing"
+        repository: "documenting",
+        rootPath: "test/test-source/"
     })
     .start();
-    
-    resolve(existsSync(TARGET_PATH));
+
+    setTimeout(() => {
+        resolve(existsSync(TARGET_PATH));
+        
+        new UnitTest("Check if pivot file exist (a/a.html)")
+		.actual(existsSync(join(TARGET_PATH, "./a/a.html")))
+		.expected(true);
+    }, 500);    // TODO: Enhance reliability (no hardcoded times; might result in test case failing due to race)
 }))
 .expected(true);
