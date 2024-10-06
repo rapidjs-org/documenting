@@ -17,6 +17,7 @@
     "bugs": {
         "url": "https://github.com/rapidjs-org/documenting/issues"
     },
+	"license": "Apache-2.0",
     "main": "./build/agent/api.js",
     "types": "./types/api.d.ts",
     "files": [
