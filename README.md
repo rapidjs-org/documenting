@@ -202,6 +202,8 @@ class GHPushAgent extends Agent  {
 }
 ```
 
+> A push agent filters requests to match the pathname `/`, `/documentation`, or `/docs`.
+
 ### Example
 
 ``` js
