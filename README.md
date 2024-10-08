@@ -177,7 +177,7 @@ class GHPullAgent extends Agent  {
     targetDirPath: string;  // Path to target file directory
     account: string;        // GitHub user (or organisation) name
     repository: string;     // GitHub repository name
-    rootPath?:              // Relative path to root directory in repository  ("." by default)
+    rootPath?: string;      // Relative path to root directory in repository  ("." by default)
     ref?: string;           // Repository reference ('main' by default)
     auth?: string;          // GitHub API authentication token (if is private repository)
 		interval?: number;      // Pull interval in ms
@@ -189,13 +189,15 @@ class GHPullAgent extends Agent  {
 
 Open Source projects commonly provide the documentation as a meta project in a GitHub repository. The GitHub Push Agent listens for any directed webhook event triggered in a specified GitHub repository.
 
+> Push encoding is supposed to be `application/json`.
+
 ``` ts
 class GHPushAgent extends Agent  {
   constructor(options: {
     targetDirPath: string;  // Path to target file directory
     account: string;        // GitHub user (or organisation) name
     repository: string;     // GitHub repository name
-    rootPath?:              // Relative path to root directory in repository  ("." by default)
+    rootPath?: string;      // Relative path to root directory in repository  ("." by default)
     ref?: string;           // Repository reference ('main' by default)
     auth?: string;          // GitHub API authentication token (if is private repository)
     secret?: string;        // GitHub webhook secret
