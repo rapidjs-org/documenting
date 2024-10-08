@@ -177,6 +177,7 @@ class GHPullAgent extends Agent  {
     targetDirPath: string;  // Path to target file directory
     account: string;        // GitHub user (or organisation) name
     repository: string;     // GitHub repository name
+    rootPath?:              // Relative path to root directory in repository  ("." by default)
     ref?: string;           // Repository reference ('main' by default)
     auth?: string;          // GitHub API authentication token (if is private repository)
 		interval?: number;      // Pull interval in ms
@@ -194,6 +195,7 @@ class GHPushAgent extends Agent  {
     targetDirPath: string;  // Path to target file directory
     account: string;        // GitHub user (or organisation) name
     repository: string;     // GitHub repository name
+    rootPath?:              // Relative path to root directory in repository  ("." by default)
     ref?: string;           // Repository reference ('main' by default)
     auth?: string;          // GitHub API authentication token (if is private repository)
     secret?: string;        // GitHub webhook secret
