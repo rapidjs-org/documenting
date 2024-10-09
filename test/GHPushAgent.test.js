@@ -28,56 +28,60 @@ new UnitTest("Check if target directory does exist (after render)")
         secret: SECRET
     })
     .start();
-
-    resolve(existsSync(TARGET_PATH));
     
-    new UnitTest("Check if target directory does not exist (after render deletion)")
-    .actual(() => {
-        rmSync(TARGET_PATH, { recursive: true });
+    resolve(existsSync(TARGET_PATH));
 
-        new UnitTest("Check if target directory does not exist (after invalid push attempt)")
-        .actual(new Promise((resolve, reject) => {
-            request("http://localhost/any", {
-                method: "POST",
-                port: 6001,
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-hub-signature-256": `abc`
-                }
-            }, () => {
-                resolve(existsSync(TARGET_PATH));
-                
-                new UnitTest("Check if target directory does exist (after successful push attempt)")
-                .actual(new Promise((resolve, reject) => {
-                    const payload = JSON.stringify({
-                        foo: "bar"
-                    });
-                    request("http://localhost/docs", {
-                        method: "POST",
-                        port: 6001,
-                        headers: {
-                            "Content-Type": "application/json",
-                            "x-hub-signature-256": `sha256=${
-                                createHmac("sha256", SECRET)
-                                .update(payload)
-                                .digest("hex")
-                            }`
-                        }
-                    }, () => {
-                        resolve(existsSync(TARGET_PATH));
-                    })
-                    .on("error", reject)
-                    .end(payload);
-                }))
-                .expected(true);
-            })
-            .on("error", reject)
-            .end();
-        }))
-        .expected(false);
-        
-        return existsSync(TARGET_PATH);
-    })
-    .expected(false);
+    new UnitTest("Check if pivot file exist (a/a.html)")
+    .actual(() => new Promise((resolve) => {
+        setTimeout(() => {
+            resolve(existsSync(TARGET_PATH));
+
+            rmSync(TARGET_PATH, {
+                recursive: true
+            });
+
+            new UnitTest("Check if target directory does not exist (after invalid push attempt)")
+            .actual(new Promise((resolve, reject) => {
+                request("http://localhost/any", {
+                    method: "POST",
+                    port: 6001,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-hub-signature-256": `abc`
+                    }
+                }, () => {
+                    resolve(existsSync(TARGET_PATH));
+                    
+                    new UnitTest("Check if target directory does exist (after successful push attempt)")
+                    .actual(new Promise((resolve, reject) => {
+                        const payload = JSON.stringify({
+                            foo: "bar"
+                        });
+                        request("http://localhost/docs", {
+                            method: "POST",
+                            port: 6001,
+                            headers: {
+                                "Content-Type": "application/json",
+                                "x-hub-signature-256": `sha256=${
+                                    createHmac("sha256", SECRET)
+                                    .update(payload)
+                                    .digest("hex")
+                                }`
+                            }
+                        }, () => {
+                            resolve(existsSync(TARGET_PATH));
+                        })
+                        .on("error", reject)
+                        .end(payload);
+                    }))
+                    .expected(true);
+                })
+                .on("error", reject)
+                .end();
+            }))
+            .expected(false);
+        }, 500);
+    }))
+    .expected(true);
 }))
 .expected(true);

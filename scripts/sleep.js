@@ -1,0 +1,1 @@
+setTimeout(() => process.exit(0), parseInt(process.argv.slice(2)[0]));

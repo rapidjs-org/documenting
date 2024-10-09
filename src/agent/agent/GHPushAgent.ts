@@ -19,14 +19,12 @@ export class GHPushAgent extends APushAgent<TGHPushAgentOptions> {
 
 		this.pullAgent = new GHPullAgent(
 			{
-				targetDirPath: options.targetDirPath,
-				interval: 0,
-				account: options.account,
-				repository: options.repository
+				...options,
+
+				interval: 0
 			},
 			renderer
 		);
-		this.pullAgent.start();
 	}
 
 	protected writeTempDir(
@@ -56,5 +54,11 @@ export class GHPushAgent extends APushAgent<TGHPushAgentOptions> {
 		}
 
 		this.pullAgent.trigger();
+	}
+
+	public async start(): Promise<void> {
+		await this.pullAgent.start();
+
+		return super.start();
 	}
 }

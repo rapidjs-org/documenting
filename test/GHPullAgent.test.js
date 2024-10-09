@@ -24,13 +24,13 @@ new UnitTest("Check if target directory does exist (after render)")
         rootPath: "test/test-source/"
     })
     .start();
-
+    
     setTimeout(() => {
         resolve(existsSync(TARGET_PATH));
         
         new UnitTest("Check if pivot file exist (a/a.html)")
 		.actual(existsSync(join(TARGET_PATH, "./a/a.html")))
 		.expected(true);
-    }, 500);    // TODO: Enhance reliability (no hardcoded times; might result in test case failing due to race)
+    }, 500);    // TODO: Enhance reliability (no hardcoded times; might result in test case failure due to racing)
 }))
 .expected(true);
